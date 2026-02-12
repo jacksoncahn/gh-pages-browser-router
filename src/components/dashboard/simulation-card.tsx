@@ -1,0 +1,75 @@
+import { Card, CardContent, CardTitle } from "../ui/card";
+import { Atom, Circle } from "lucide-react";
+import { Badge } from "../ui/badge";
+
+type SimulationStatus = "paused" | "running" | "complete" | "unknown";
+
+interface SimulationCardProps {
+  simulation: {
+    id: number;
+    name: string;
+    proteinID: string;
+    status: string;
+  };
+  status: SimulationStatus;
+}
+export function SimulationCard({ simulation, status }: SimulationCardProps) {
+  const getStatusBadge = () => {
+    switch (status) {
+      case "complete":
+        return (
+          <Badge variant="outline">
+            <Circle
+              data-icon="inline-start"
+              className="fill-success text-success"
+            />
+            Complete
+          </Badge>
+        );
+      case "running":
+        return (
+          <Badge variant="outline">
+            <Circle
+              data-icon="inline-start"
+              className="fill-warning text-warning"
+            />
+            Running
+          </Badge>
+        );
+      case "paused":
+        return (
+          <Badge variant="outline">
+            <Circle
+              data-icon="inline-start"
+              className="fill-secondary text-secondary"
+            />
+            Paused
+          </Badge>
+        );
+      default:
+        return <Badge variant="outline">Loading...</Badge>;
+    }
+  };
+
+  const handleClick = () => {
+    console.log("pressed simulation card button");
+  };
+
+  return (
+    <Card className="cursor-pointer w-full p-5" onClick={handleClick}>
+      {/* TODO: could add picture representation of sim */}
+      <CardTitle className="text-xl text-left mb-0.5">
+        {simulation.name}
+      </CardTitle>
+      <CardContent className="p-0">
+        <div className="flex flex-col gap-2 items-start">
+          <div className="flex flex-row gap-3 items-center text-sm">
+            <Atom className="size-5" />
+            <p className="text-sm">{simulation.proteinID}</p>
+          </div>
+          {getStatusBadge()}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
