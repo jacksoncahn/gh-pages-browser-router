@@ -1,13 +1,8 @@
 import './App.css'
-import Dashboard from './pages/Dashboard'
-import Home from './pages/Home'
+import { Outlet } from 'react-router'
 
 function App() {
-  return (
-    <>
-      <Dashboard />
-    </>
-  )
+  return <Outlet />
 }
 
 export default App

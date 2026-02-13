@@ -1,6 +1,7 @@
 import { Card, CardContent, CardTitle } from "../ui/card";
 import { Atom, Circle } from "lucide-react";
 import { Badge } from "../ui/badge";
+import { useNavigate } from "react-router";
 
 type SimulationStatus = "paused" | "running" | "complete" | "unknown";
 
@@ -14,6 +15,8 @@ interface SimulationCardProps {
   status: SimulationStatus;
 }
 export function SimulationCard({ simulation, status }: SimulationCardProps) {
+  const navigate = useNavigate();
+
   const getStatusBadge = () => {
     switch (status) {
       case "complete":
@@ -52,7 +55,7 @@ export function SimulationCard({ simulation, status }: SimulationCardProps) {
   };
 
   const handleClick = () => {
-    console.log("pressed simulation card button");
+    navigate(`/simulation/${simulation.id}`);
   };
 
   return (
