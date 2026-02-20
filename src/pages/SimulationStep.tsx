@@ -11,6 +11,19 @@ import {
 } from "@/components/ui/combobox";
 import { Copy, Download } from "lucide-react";
 import { useState } from "react";
+import { useSimulation } from "@/contexts/SimulationContext";
+import {
+  ForceFields,
+  PositiveIonTypes,
+  NegativeIonTypes,
+  WaterModels,
+  BoxTypes,
+  type PositiveIonType,
+  type NegativeIonType,
+  type ForceField,
+  type WaterModel,
+  type BoxType,
+} from "@/types/simulation.types";
 
 export default function SimulationStep() {
   const { stepNumber } = useParams();
@@ -18,12 +31,14 @@ export default function SimulationStep() {
   const currentStep = parseInt(stepNumber || "1");
   const totalSteps = 9;
   const [copied, setCopied] = useState(false);
+  const simulation = useSimulation();
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
       navigate(`/simulation/new/${currentStep + 1}`);
     } else {
-      // TODO: Submit simulation and navigate to dashboard
+      // Save simulation to localStorage and navigate to dashboard
+      simulation.completeSimulation();
       navigate("/dashboard");
     }
   };
@@ -34,17 +49,55 @@ export default function SimulationStep() {
     }
   };
 
-  // Helper component for simple combobox
-  const SimpleCombobox = ({
+  // Check if current step has all required fields filled
+  const isCurrentStepValid = (): boolean => {
+    const params = simulation.currentSimulation?.simulation_params;
+
+    switch (currentStep) {
+      case 1:
+        return !!simulation.currentSimulation?.simName?.trim();
+      case 2:
+        return !!params?.proteinId?.trim();
+      case 3:
+        return !!params?.forceField && !!params?.waterModel;
+      case 4:
+        return !!(params as any)?.boxDistance && !!params?.boxType;
+      case 5:
+        return (
+          !!params?.positiveIon &&
+          !!params?.negativeIon &&
+          !!(params as any)?.solventGroup &&
+          !!(params as any)?.ion_concentration
+        );
+      case 6:
+      case 7:
+      case 8:
+      case 9:
+        return true;
+      default:
+        return false;
+    }
+  };
+
+  // Helper component for controlled combobox
+  const ControlledCombobox = ({
     label,
     items,
+    value,
+    onChange,
   }: {
     label: string;
     items: string[];
+    value?: string;
+    onChange: (value: string) => void;
   }) => (
-    <div className="flex flex-row gap-2">
+    <div className="flex flex-col gap-2">
       <label className="text-sm font-medium">{label}</label>
-      <Combobox items={items}>
+      <Combobox
+        items={items}
+        value={value ?? null}
+        onValueChange={(val) => val && onChange(val)}
+      >
         <ComboboxInput placeholder={`Select ${label.toLowerCase()}`} />
         <ComboboxContent>
           <ComboboxEmpty>No items found.</ComboboxEmpty>
@@ -84,19 +137,81 @@ export default function SimulationStep() {
     </div>
   );
 
-  // TODO: validate code blocks for each step
+  // Generate GROMACS commands with actual values
   const getStepCode = (step: number): string => {
+    const params = simulation.currentSimulation?.simulation_params;
     const codes: { [key: number]: string } = {
-      2: "gmx protein prep",
-      3: "gmx pdb2gmx -f ${pdb_id}.pdb -o protein.gro -water [WATER_MODEL] -ff [FORCE_FIELD]",
-      4: "gmx editconf -f protein.gro -o box.gro -bt [BOX_TYPE] -d [DISTANCE]",
-      5: "gmx genion -s ions.tpr -o ions.gro -p topol.top -pname [PROTEIN_NAME] -nname [NNAME] -neutral",
-      6: "gmx grompp -f minim.mdp -c ions.gro -p topol.top -o em.tpr\ngmx mdrun -v -deffnm em",
-      7: "gmx grompp -f nvt.mdp -c em.gro -p topol.top -o nvt.tpr\ngmx mdrun -v -deffnm nvt",
-      8: "gmx temp -f nvt.edr -o temperature.xvg\ngmx energy -f nvt.edr -o pressure.xvg\ngmx energy -f nvt.edr -o system_energy.xvg",
-      9: "ngmx grompp -f md.mdp -c npt.gro -p topol.top -o md.tpr\ngmx mdrun -v -deffnm md",
+      2: "TODO: add protein download command here",
+      3: `gmx pdb2gmx -f ${params?.proteinId || "[PDB_ID]"}.pdb -o ${params?.proteinId || "[PDB_ID]"}.gro -water ${params?.waterModel || "[WATER_MODEL]"} -ff ${params?.forceField || "[FORCE_FIELD]"}`,
+      4: `gmx editconf -f ${params?.proteinId || "[PDB_ID]"}.gro -o ${params?.proteinId || "[PDB_ID]"}_box.gro -c -d ${(params as any)?.boxDistance || "[DISTANCE]"} -bt ${params?.boxType || "[BOX_TYPE]"} \ngmx solvate -cp ${params?.proteinId || "[PDB_ID]"}_inBox.gro -o ${params?.proteinId || "[PDB_ID]"}_inSolution.gro -p topol.top -cs ${params?.waterModel || "[WATER_MODEL]"}.gro`,
+      //TODO from here
+      5: `gmx grompp -f ions.mdp -c ${params?.proteinId || "[PDB_ID]"}_inSolution.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_ions.tpr\ngmx genion -s ${params?.proteinId || "[PDB_ID]"}_ions.tpr -o ${params?.proteinId || "[PDB_ID]"}_ions.gro -p topol.top -pname ${params?.positiveIon || "[POSITIVE_ION]"} -nname ${params?.negativeIon || "[NEGATIVE_ION]"} -conc ${params?.ion_concentration || "[ION_CONCENTRATION]"}`,
+      6: `gmx grompp -f minim.mdp -c ${params?.proteinId || "[PDB_ID]"}_ions.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_em.tpr\ngmx mdrun -v -deffnm ${params?.proteinId || "[PDB_ID]"}_em\ngmx energy -f ${params?.proteinId || "[PDB_ID]"}_em.edr -o ${params?.proteinId || "[PDB_ID]"}.potential.xvg`,
+      7: `gmx grompp -f nvt.mdp -c ${params?.proteinId || "[PDB_ID]"}_em.gro -r ${params?.proteinId || "[PDB_ID]"}_em.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_nvt.tpr\ngmx mdrun -deffnm ${params?.proteinId || "[PDB_ID]"}_nvt -nb gpu`,
+      8: `gmx energy -f ${params?.proteinId || "[PDB_ID]"}_nvt.edr -o ${params?.proteinId || "[PDB_ID]"}_temperature.xvg\ngrompp -f npt.mdp -c ${params?.proteinId || "[PDB_ID]"}_nvt.gro -r ${params?.proteinId || "[PDB_ID]"}_nvt.gro -t ${params?.proteinId || "[PDB_ID]"}_nvt.cpt -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_npt.tpr\ngmx mrun -deffnm ${params?.proteinId || "[PDB_ID]"}_npt -nb gpu\ngmx energy -f ${params?.proteinId || "[PDB_ID]"}_npt.edr -o ${params?.proteinId || "[PDB_ID]"}_pressure.xvg\ngmx energy -f ${params?.proteinId || "[PDB_ID]"}_npt.edr -o ${params?.proteinId || "[PDB_ID]"}_density.xvg`,
+      9: `gmx grompp -f md.mdp -c ${params?.proteinId || "[PDB_ID]"}_npt.gro -t ${params?.proteinId || "[PDB_ID]"}_npt.cpt -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_md.tpr\ngmx mdrun -deffnm ${params?.proteinId || "[PDB_ID]"}_md -nb gpu`,
     };
     return codes[step] || "";
+  };
+
+  // TODO: confirm that bash script generation is correct and complete once all steps are implemented
+  const getCompleteBashScript = (): string => {
+    const params = simulation.currentSimulation?.simulation_params;
+    const simName =
+      simulation.currentSimulation?.simName || "Unknown Simulation";
+
+    return `#!/bin/bash
+  # GROMACS Molecular Dynamics Simulation Script
+  # Simulation Name: ${simName}
+  # Generated: ${new Date().toISOString()}
+
+  # ===== CONFIGURATION =====
+  # Protein: ${params?.proteinId || "[PDB_ID]"}
+  # Force Field: ${params?.forceField || "[FORCE_FIELD]"}
+  # Water Model: ${params?.waterModel || "[WATER_MODEL]"}
+  # Box Type: ${params?.boxType || "[BOX_TYPE]"}
+  # Box Distance: ${(params as any)?.boxDistance || "[DISTANCE]"} nm
+  # Positive Ion: ${params?.positiveIon || "[POSITIVE_ION]"}
+  # Negative Ion: ${params?.negativeIon || "[NEGATIVE_ION]"}
+  # Solvent Group: ${(params as any)?.solventGroup || "[SOLVENT_GROUP]"}
+  # Ion Concentration: ${(params as any)?.ion_concentration || "[ION_CONCENTRATION]"} M
+
+  echo "Starting GROMACS simulation: ${simName}"
+
+  # ===== STEP 1: Download Protein Structure =====
+  echo "Step 1: Downloading protein structure..."
+  ${getStepCode(2)}
+
+  # ===== STEP 2: Create Topology =====
+  echo "Step 2: Creating topology..."
+  ${getStepCode(3)}
+
+  # ===== STEP 3: Define Box and Solvate =====
+  echo "Step 3: Defining box and solvating..."
+  ${getStepCode(4)}
+
+  # ===== STEP 4: Add Ions =====
+  echo "Step 4: Adding ions..."
+  ${getStepCode(5)}
+
+  # ===== STEP 5: Energy Minimization =====
+  echo "Step 5: Running energy minimization..."
+  ${getStepCode(6)}
+
+  # ===== STEP 6: NVT Equilibration =====
+  echo "Step 6: Running NVT equilibration..."
+  ${getStepCode(7)}
+
+  # ===== STEP 7: NPT Equilibration and Validation =====
+  echo "Step 7: Running NPT equilibration and validation..."
+  ${getStepCode(8)}
+
+  # ===== STEP 8: Production MD =====
+  echo "Step 8: Running production MD..."
+  ${getStepCode(9)}
+
+  echo "Simulation complete!"
+  `;
   };
 
   const copyCode = () => {
@@ -106,9 +221,30 @@ export default function SimulationStep() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const copyCompleteScript = () => {
+    const script = getCompleteBashScript();
+    navigator.clipboard.writeText(script);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const downloadBashScript = () => {
+    const script = getCompleteBashScript();
+    const simName = simulation.currentSimulation?.simName || "simulation";
+    const blob = new Blob([script], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${simName.replace(/\s+/g, "_")}_gromacs.sh`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const CodeBlock = () => (
     <div className="mt-6 relative flex flex-row items-center gap-4">
-        <pre className="bg-secondary p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word">
+      <pre className="bg-card p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word">
         <code className="text-sm">{getStepCode(currentStep)}</code>
       </pre>
       <Button size="sm" variant="outline" onClick={copyCode}>
@@ -119,7 +255,10 @@ export default function SimulationStep() {
   );
 
   const renderStepContent = () => {
+    const params = simulation.currentSimulation?.simulation_params;
+
     switch (currentStep) {
+      // STEP ONE: Simulation Name
       case 1:
         return (
           <div className="gap-4 flex flex-col items-center">
@@ -132,209 +271,224 @@ export default function SimulationStep() {
             <Input
               placeholder="eg. PHYS 3245 Midterm Simulation"
               className="mt-2"
+              value={simulation.currentSimulation?.simName || ""}
+              onChange={(e) => simulation.updateSimulationName(e.target.value)}
             />
           </div>
         );
+
+      // STEP TWO: Protein Selection
       case 2:
         return (
           <div className="gap-4 flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-2">
               Choose a protein for the simulation
             </h2>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-              sollicitudin, tellus eu efficitur luctus, sapien lorem gravida
-              nunc, in posuere dolor metus id urna.
-            </p>
-            <SimpleCombobox label="Protein" items={["1A2B", "2C3D", "3E4F"]} />
+            <p>Enter the PDB ID of the protein you want to simulate.</p>
+            <Input
+              placeholder="e.g. 1A2B"
+              className="mt-2"
+              value={params?.proteinId || ""}
+              onChange={(e) => simulation.updateProteinId(e.target.value)}
+            />
             <CodeBlock />
           </div>
         );
+
+      //STEP THREE: Topology Creation
       case 3:
         return (
           <div className="gap-4 flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-2">Create the topology</h2>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-              sollicitudin, tellus eu efficitur luctus, sapien lorem gravida
-              nunc, in posuere dolor metus id urna.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <SimpleCombobox
+            <p>Select the force field and water model for your simulation.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 w-full">
+              <ControlledCombobox
                 label="Force Field"
-                items={["AMBER", "CHARMM", "OPLS", "GROMOS"]}
+                items={Object.values(ForceFields)}
+                value={params?.forceField}
+                onChange={(value) =>
+                  simulation.updateForceField(value as ForceField)
+                }
               />
-              <SimpleCombobox
+              <ControlledCombobox
                 label="Water Model"
-                items={["TIP3P", "TIP4P", "SPC", "SPC/E"]}
+                items={Object.values(WaterModels)}
+                value={params?.waterModel}
+                onChange={(value) =>
+                  simulation.updateWaterModel(value as WaterModel)
+                }
               />
             </div>
             <CodeBlock />
           </div>
         );
+
+      //STEP FOUR: Box Definition and Solvation
       case 4:
         return (
           <div className="gap-4 flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-2">Fill the box with water</h2>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-              sollicitudin, tellus eu efficitur luctus, sapien lorem gravida
-              nunc, in posuere dolor metus id urna.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <SimpleCombobox
+            <p>Define the box dimensions and type for solvation.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 w-full">
+              <ControlledCombobox
                 label="Distance"
-                items={["1.0 nm", "1.2 nm", "1.5 nm", "2.0 nm"]}
+                items={["1.0", "1.2", "1.5", "2.0"]}
+                value={(params as any)?.boxDistance}
+                onChange={(value) => simulation.updateBoxDistance(value)}
               />
-              <SimpleCombobox
+              <ControlledCombobox
                 label="Box Type"
-                items={["cubic", "dodecahedron", "octahedron", "triclinic"]}
+                items={Object.values(BoxTypes)}
+                value={params?.boxType}
+                onChange={(value) => simulation.updateBoxType(value as BoxType)}
               />
             </div>
             <CodeBlock />
           </div>
         );
+
+      // STEP FIVE: Ionization
       case 5:
         return (
           <div className="gap-4 flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-2">Add ions to the box</h2>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-              sollicitudin, tellus eu efficitur luctus, sapien lorem gravida
-              nunc, in posuere dolor metus id urna.
-            </p>
-            <div className="flex flex-col md:flex-row gap-4 mt-4">
-              <SimpleCombobox
-                label="Protein Name"
-                items={["NA", "K", "CA", "MG"]}
+            <p>Select the ion types to neutralize the system.</p>
+            <div className="flex flex-col md:flex-row gap-4 mt-4 w-full">
+              <ControlledCombobox
+                label="Positive Ion"
+                items={Object.values(PositiveIonTypes)}
+                value={params?.positiveIon}
+                onChange={(value) =>
+                  simulation.updatePositiveIon(value as PositiveIonType)
+                }
               />
-              <SimpleCombobox label="NName" items={["CL", "BR", "I"]} />
-              <SimpleCombobox
+              <ControlledCombobox
+                label="Negative Ion"
+                items={Object.values(NegativeIonTypes)}
+                value={params?.negativeIon}
+                onChange={(value) =>
+                  simulation.updateNegativeIon(value as NegativeIonType)
+                }
+              />
+              <ControlledCombobox
                 label="Solvent Group"
+                //TODO: replace this with actual supported solvent groups once we have them defined
                 items={["SOL", "WAT", "HOH"]}
+                value={(params as any)?.solventGroup}
+                onChange={(value) => simulation.updateSolventGroup(value)}
+              />
+              <ControlledCombobox
+                label="Ion Concentration"
+                items={["0.1", "0.15", "0.2", "0.5", "1.0"]}
+                value={(params as any)?.ion_concentration?.toString()}
+                onChange={(value) =>
+                  simulation.updateIonConcentration(parseFloat(value))
+                }
               />
             </div>
             <CodeBlock />
           </div>
         );
+
+      // STEP SIX: Minimization
       case 6:
         return (
           <div className="gap-4 flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-2">Conduct minimization</h2>
             <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-              sollicitudin, tellus eu efficitur luctus, sapien lorem gravida
-              nunc, in posuere dolor metus id urna.
+              Energy minimization will be performed using default parameters.
+              Advanced users can conduct their own version of this step.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <SimpleCombobox
-                label="Test"
-                items={["Option 1", "Option 2", "Option 3"]}
-              />
-              <SimpleCombobox
-                label="Test"
-                items={["Option 1", "Option 2", "Option 3"]}
-              />
-              <SimpleCombobox
-                label="Test"
-                items={["Option 1", "Option 2", "Option 3"]}
-              />
-              <SimpleCombobox
-                label="Test"
-                items={["Option 1", "Option 2", "Option 3"]}
-              />
-            </div>
             <CodeBlock />
           </div>
         );
+
+      // STEP SEVEN: Equilibration
       case 7:
         return (
           <div className="gap-4 flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-2">Equilibriate the system</h2>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-              sollicitudin, tellus eu efficitur luctus, sapien lorem gravida
-              nunc, in posuere dolor metus id urna.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <SimpleCombobox
-                label="Test"
-                items={["Option 1", "Option 2", "Option 3"]}
-              />
-              <SimpleCombobox
-                label="Test"
-                items={["Option 1", "Option 2", "Option 3"]}
-              />
-              <SimpleCombobox
-                label="Test"
-                items={["Option 1", "Option 2", "Option 3"]}
-              />
-              <SimpleCombobox
-                label="Test"
-                items={["Option 1", "Option 2", "Option 3"]}
-              />
-            </div>
+            <p>NVT equilibration will be performed to stabilize temperature.</p>
             <CodeBlock />
           </div>
         );
+
+      // STEP EIGHT: Validation
       case 8:
         return (
           <div className="gap-4 flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-2">System validation</h2>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-              sollicitudin, tellus eu efficitur luctus, sapien lorem gravida
-              nunc, in posuere dolor metus id urna.
-            </p>
+            <p>Select which properties to validate after equilibration.</p>
             <div className="flex flex-col gap-3 mt-4">
               <CheckboxItem
                 label="Temperature"
-                checked={false}
-                onChange={() => {}}
+                checked={params?.verificationParams?.temperature || false}
+                onChange={(checked) =>
+                  simulation.updateVerification("temperature", checked)
+                }
               />
               <CheckboxItem
                 label="Pressure"
-                checked={false}
-                onChange={() => {}}
+                checked={params?.verificationParams?.pressure || false}
+                onChange={(checked) =>
+                  simulation.updateVerification("pressure", checked)
+                }
               />
               <CheckboxItem
-                label="System"
-                checked={false}
-                onChange={() => {}}
+                label="System Volume"
+                checked={params?.verificationParams?.system_volume || false}
+                onChange={(checked) =>
+                  simulation.updateVerification("system_volume", checked)
+                }
               />
             </div>
             <CodeBlock />
           </div>
         );
+
+      // TODO: new step here once we get to data analysis
+
+      // STEP NINE: Review and submit
       case 9:
         return (
-          <div className="gap-4 flex flex-col items-center">
+          <div className="gap-4 flex flex-col items-center w-full">
             <h2 className="text-2xl font-bold mb-2">
-              Download the bash script
+              Complete Your Simulation
             </h2>
-            <p>Download the complete bash script to run your simulation.</p>
-            <Button className="mt-4 w-fit" size="lg">
-              <Download className="mr-2 h-4 w-4" />
-              Download Script
-            </Button>
+            <p className="text-center">
+              Review your simulation settings and download or copy the complete
+              GROMACS bash script.
+            </p>
+
+            {/* Complete Script */}
+            <div className="mt-6 w-full">
+              <h3 className="font-semibold mb-2">Complete GROMACS Script</h3>
+              <div className="relative flex flex-col gap-2">
+                <pre className="bg-card p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word max-h-96 overflow-y-auto text-left">
+                  <code className="text-xs">{getCompleteBashScript()}</code>
+                </pre>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={copyCompleteScript}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    {copied ? "Copied!" : "Copy Script"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={downloadBashScript}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download .sh
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         );
-      // case 10:
-      //   return (
-      //     <div className="gap-4 flex flex-col">
-      //       <h2 className="text-2xl font-bold mb-2">Review</h2>
-      //       <p>Review your simulation settings before final submission.</p>
-      //       <CodeBlock />
-      //     </div>
-      //   );
-      // case 11:
-      //   return (
-      //     <div className="gap-4 flex flex-col">
-      //       <h2 className="text-2xl font-bold mb-2">Confirmation</h2>
-      //       <p>Confirm and submit your simulation.</p>
-      //       <CodeBlock />
-      //     </div>
-      //   );
       default:
         return <div>Invalid step</div>;
     }
@@ -352,7 +506,7 @@ export default function SimulationStep() {
         >
           Previous
         </Button>
-        <Button onClick={handleNext}>
+        <Button onClick={handleNext} disabled={!isCurrentStepValid()}>
           {currentStep === totalSteps ? "Submit" : "Next"}
         </Button>
       </div>

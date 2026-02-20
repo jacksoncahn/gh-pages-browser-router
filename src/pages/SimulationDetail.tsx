@@ -1,41 +1,260 @@
 import { NavBar } from "@/components/shared/nav-bar";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { ChevronLeft, Copy, Download } from "lucide-react";
 import { useParams, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { getSimulationById } from "@/utils/localStorage";
+import type { Simulation } from "@/types/simulation.types";
 
 export default function SimulationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [simulation, setSimulation] = useState<Simulation | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  // TODO: Fetch simulation data from backend using the id
-  const simulation = {
-    id: id,
-    name: "PHYS4325 Midterm Simulation 1",
-    proteinName: "collagen",
-    proteinID: "XX103",
-    status: "complete",
-    timestamp: "date",
+  useEffect(() => {
+    if (id) {
+      const sim = getSimulationById(parseInt(id));
+      setSimulation(sim);
+    }
+  }, [id]);
+
+  const getCompleteBashScript = (): string => {
+    if (!simulation) return "";
+
+    const params = simulation.simulation_params;
+    const simName = simulation.simName || "Unknown Simulation";
+
+    return `#!/bin/bash
+# GROMACS Molecular Dynamics Simulation Script
+# Simulation Name: ${simName}
+# Generated: ${new Date(simulation.created_at).toLocaleString()}
+
+# ===== CONFIGURATION =====
+# Protein: ${params?.proteinId || "[PDB_ID]"}
+# Force Field: ${params?.forceField || "[FORCE_FIELD]"}
+# Water Model: ${params?.waterModel || "[WATER_MODEL]"}
+# Box Type: ${params?.boxType || "[BOX_TYPE]"}
+# Box Distance: ${(params as any)?.boxDistance || "[DISTANCE]"} nm
+# Positive Ion: ${params?.positiveIon || "[POSITIVE_ION]"}
+# Negative Ion: ${params?.negativeIon || "[NEGATIVE_ION]"}
+# Solvent Group: ${(params as any)?.solventGroup || "[SOLVENT_GROUP]"}
+# Ion Concentration: ${params?.ion_concentration || "[ION_CONCENTRATION]"} M
+
+echo "Starting GROMACS simulation: ${simName}"
+
+# ===== STEP 1: Download Protein Structure =====
+echo "Step 1: Downloading protein structure..."
+# TODO: add protein download command here
+
+# ===== STEP 2: Create Topology =====
+echo "Step 2: Creating topology..."
+gmx pdb2gmx -f ${params?.proteinId || "[PDB_ID]"}.pdb -o ${params?.proteinId || "[PDB_ID]"}.gro -water ${params?.waterModel || "[WATER_MODEL]"} -ff ${params?.forceField || "[FORCE_FIELD]"}
+
+# ===== STEP 3: Define Box and Solvate =====
+echo "Step 3: Defining box and solvating..."
+gmx editconf -f ${params?.proteinId || "[PDB_ID]"}.gro -o ${params?.proteinId || "[PDB_ID]"}_box.gro -c -d ${(params as any)?.boxDistance || "[DISTANCE]"} -bt ${params?.boxType || "[BOX_TYPE]"} 
+gmx solvate -cp ${params?.proteinId || "[PDB_ID]"}_inBox.gro -o ${params?.proteinId || "[PDB_ID]"}_inSolution.gro -p topol.top -cs ${params?.waterModel || "[WATER_MODEL]"}.gro
+
+# ===== STEP 4: Add Ions =====
+echo "Step 4: Adding ions..."
+gmx grompp -f ions.mdp -c ${params?.proteinId || "[PDB_ID]"}_inSolution.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_ions.tpr
+gmx genion -s ${params?.proteinId || "[PDB_ID]"}_ions.tpr -o ${params?.proteinId || "[PDB_ID]"}_ions.gro -p topol.top -pname ${params?.positiveIon || "[POSITIVE_ION]"} -nname ${params?.negativeIon || "[NEGATIVE_ION]"} -conc ${params?.ion_concentration || "[ION_CONCENTRATION]"}
+
+# ===== STEP 5: Energy Minimization =====
+echo "Step 5: Running energy minimization..."
+gmx grompp -f minim.mdp -c ${params?.proteinId || "[PDB_ID]"}_ions.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_em.tpr
+gmx mdrun -v -deffnm ${params?.proteinId || "[PDB_ID]"}_em
+gmx energy -f ${params?.proteinId || "[PDB_ID]"}_em.edr -o ${params?.proteinId || "[PDB_ID]"}.potential.xvg
+
+# ===== STEP 6: NVT Equilibration =====
+echo "Step 6: Running NVT equilibration..."
+gmx grompp -f nvt.mdp -c ${params?.proteinId || "[PDB_ID]"}_em.gro -r ${params?.proteinId || "[PDB_ID]"}_em.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_nvt.tpr
+gmx mdrun -deffnm ${params?.proteinId || "[PDB_ID]"}_nvt -nb gpu
+
+# ===== STEP 7: NPT Equilibration and Validation =====
+echo "Step 7: Running NPT equilibration and validation..."
+gmx energy -f ${params?.proteinId || "[PDB_ID]"}_nvt.edr -o ${params?.proteinId || "[PDB_ID]"}_temperature.xvg
+gmx grompp -f npt.mdp -c ${params?.proteinId || "[PDB_ID]"}_nvt.gro -r ${params?.proteinId || "[PDB_ID]"}_nvt.gro -t ${params?.proteinId || "[PDB_ID]"}_nvt.cpt -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_npt.tpr
+gmx mdrun -deffnm ${params?.proteinId || "[PDB_ID]"}_npt -nb gpu
+gmx energy -f ${params?.proteinId || "[PDB_ID]"}_npt.edr -o ${params?.proteinId || "[PDB_ID]"}_pressure.xvg
+gmx energy -f ${params?.proteinId || "[PDB_ID]"}_npt.edr -o ${params?.proteinId || "[PDB_ID]"}_density.xvg
+
+# ===== STEP 8: Production MD =====
+echo "Step 8: Running production MD..."
+gmx grompp -f md.mdp -c ${params?.proteinId || "[PDB_ID]"}_npt.gro -t ${params?.proteinId || "[PDB_ID]"}_npt.cpt -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_md.tpr
+gmx mdrun -deffnm ${params?.proteinId || "[PDB_ID]"}_md -nb gpu
+
+echo "Simulation complete!"
+`;
   };
+
+  const copyScript = () => {
+    const script = getCompleteBashScript();
+    navigator.clipboard.writeText(script);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const downloadBashScript = () => {
+    const script = getCompleteBashScript();
+    const simName = simulation?.simName || "simulation";
+    const blob = new Blob([script], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${simName.replace(/\s+/g, "_")}_gromacs.sh`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  if (!simulation) {
+    return (
+      <main>
+        <NavBar />
+        <div className="flex flex-col items-center justify-center p-8">
+          <p className="text-lg">Simulation not found</p>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => navigate("/dashboard")}
+          >
+            <ChevronLeft />
+            Back to Dashboard
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
+  const params = simulation.simulation_params;
 
   return (
     <main>
       <NavBar />
 
-      <div className="flex flex-col items-start p-4">
+      <div className="flex flex-col items-start p-8 px-[10%]">
         <Button
           variant="ghost"
-          className="mb-4"
+          className="mb-6"
           onClick={() => navigate("/dashboard")}
         >
           <ChevronLeft />
           Back
         </Button>
 
-        <div className="flex flex-col items-start gap-2">
-          <h1 className="text-3xl font-bold">{simulation.name}</h1>
-          <h1 className="text-xl">{simulation.proteinName}</h1>
-          <h2 className="text-lg">PDB ID: {simulation.proteinID}</h2>
-          <h3 className="mt-2">Ran on {simulation.timestamp}</h3>
+        {/* Header */}
+        <div className="flex flex-col items-start gap-2 mb-8">
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold">{simulation.simName}</h1>
+            <Badge
+              variant={
+                simulation.status === "complete" ? "default" : "secondary"
+              }
+            >
+              {simulation.status}
+            </Badge>
+          </div>
+          <p className="text-muted-foreground">
+            Created on {new Date(simulation.created_at).toLocaleString()}
+          </p>
+        </div>
+
+        {/* Simulation Configuration */}
+        <div className="w-full p-6">
+          <h2 className="text-xl font-semibold mb-4 text-center">
+            Simulation Configuration
+          </h2>
+          <div className="grid grid-cols-2 gap-4 bg-card rounded-lg p-6 mb-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Protein ID</p>
+              <p className="font-medium">{params?.proteinId || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Force Field</p>
+              <p className="font-medium">{params?.forceField || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Water Model</p>
+              <p className="font-medium">{params?.waterModel || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Box Type</p>
+              <p className="font-medium">{params?.boxType || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Box Distance</p>
+              <p className="font-medium">
+                {(params as any)?.boxDistance
+                  ? `${(params as any).boxDistance} units?`
+                  : "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Ion Concentration</p>
+              <p className="font-medium">
+                {params?.ion_concentration
+                  ? `${params.ion_concentration} M`
+                  : "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Positive Ion</p>
+              <p className="font-medium">{params?.positiveIon || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Negative Ion</p>
+              <p className="font-medium">{params?.negativeIon || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Solvent Group</p>
+              <p className="font-medium">
+                {(params as any)?.solventGroup || "N/A"}
+              </p>
+            </div>
+            {params?.verificationParams && (
+              <div className="col-span-2">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Verification Parameters
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {params.verificationParams.temperature && (
+                    <Badge variant="outline">Temperature</Badge>
+                  )}
+                  {params.verificationParams.pressure && (
+                    <Badge variant="outline">Pressure</Badge>
+                  )}
+                  {params.verificationParams.system_volume && (
+                    <Badge variant="outline">System Volume</Badge>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* GROMACS Script */}
+        <div className="w-full">
+          <h2 className="text-xl font-semibold mb-4">GROMACS Script</h2>
+          <div className="relative flex flex-col gap-2">
+            <pre className="bg-card p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word max-h-96 overflow-y-auto text-left border">
+              <code className="text-xs">{getCompleteBashScript()}</code>
+            </pre>
+            <div className="flex gap-2 justify-end">
+              <Button size="sm" variant="outline" onClick={copyScript}>
+                <Copy className="mr-2 h-4 w-4" />
+                {copied ? "Copied!" : "Copy Script"}
+              </Button>
+              <Button size="sm" variant="default" onClick={downloadBashScript}>
+                <Download className="mr-2 h-4 w-4" />
+                Download .sh
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </main>

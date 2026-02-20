@@ -2,6 +2,7 @@ import { NavBar } from "@/components/shared/nav-bar";
 import { Outlet, useParams, useNavigate } from "react-router";
 import { CreationStepProgress } from "@/components/simulation/step-progress";
 import { useEffect } from "react";
+import { SimulationProvider } from "@/contexts/SimulationContext";
 
 export default function CreateSimulation() {
   const { stepNumber } = useParams();
@@ -17,14 +18,16 @@ export default function CreateSimulation() {
   }, [stepNumber, navigate]);
 
   return (
-    <main className="h-screen flex flex-col max-h-100%">
-      <NavBar />
-      <CreationStepProgress step={currentStep} totalSteps={totalSteps} />
-      <div className="flex-1 flex items-center justify-center overflow-auto">
-        <div className="w-full max-w-4xl h-full flex items-center justify-center">
-          <Outlet />
+    <SimulationProvider>
+      <main className="h-screen flex flex-col max-h-100%">
+        <NavBar />
+        <CreationStepProgress step={currentStep} totalSteps={totalSteps} />
+        <div className="flex-1 flex items-center justify-center overflow-auto">
+          <div className="w-full max-w-4xl h-full flex items-center justify-center">
+            <Outlet />
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </SimulationProvider>
   );
 }
