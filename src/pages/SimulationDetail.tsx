@@ -1,7 +1,6 @@
 import { NavBar } from "@/components/shared/nav-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { ChevronLeft, Copy, Download } from "lucide-react";
 import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";

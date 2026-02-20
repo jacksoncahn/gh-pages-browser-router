@@ -102,7 +102,7 @@ export type BoxType = z.infer<typeof BoxType>
 
 /* ION TYPES */
 export const PositiveIonTypes = {
-  Na: "Sodium (Na)",
+  Na: "NA",
   //TODO: add other supported positive ion types
 } as const
 
@@ -113,7 +113,7 @@ export const PositiveIonType = z.union([
 export type PositiveIonType = z.infer<typeof PositiveIonType>
 
 export const NegativeIonTypes = {
-  Cl: "Chlorine (Cl)",
+  Cl: "CL",
   //TODO: add other supported negative ion types
 } as const
 
