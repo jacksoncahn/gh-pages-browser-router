@@ -12,23 +12,28 @@ import SimulationDetail from "./pages/SimulationDetail.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import SimulationStep from "./pages/SimulationStep.tsx";
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      Component: App,
+      children: [
+        { index: true, Component: Home },
+        { path: "dashboard", Component: Dashboard },
+        {
+          path: "simulation/new",
+          Component: CreateSimulation,
+          children: [{ path: ":stepNumber", Component: SimulationStep }],
+        },
+        { path: "simulation/:id", Component: SimulationDetail },
+        { path: "*", Component: NotFound },
+      ],
+    },
+  ],
   {
-    path: "/",
-    Component: App,
-    children: [
-      { index: true, Component: Home },
-      { path: "dashboard", Component: Dashboard },
-      {
-        path: "simulation/new",
-        Component: CreateSimulation,
-        children: [{ path: ":stepNumber", Component: SimulationStep }],
-      },
-      { path: "simulation/:id", Component: SimulationDetail },
-      { path: "*", Component: NotFound },
-    ],
+    basename: import.meta.env.BASE_URL,
   },
-]);
+);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
