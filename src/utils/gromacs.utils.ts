@@ -25,7 +25,7 @@ export function generateStepCommand(
     2: "TODO: add protein download command here",
     3: `gmx pdb2gmx -f ${proteinId}.pdb -o ${proteinId}.gro -water ${waterModel} -ff ${forceField}`,
     4: `gmx editconf -f ${proteinId}.gro -o ${proteinId}_box.gro -c -d ${boxDistance} -bt ${boxType} \ngmx solvate -cp ${proteinId}_inBox.gro -o ${proteinId}_inSolution.gro -p topol.top -cs ${waterModel}.gro`,
-    5: `gmx grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\ngmx genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon} -conc ${ionConcentration}`,
+    5: `gmx grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\ngmx genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon} ${(ionConcentration != 0 && ionConcentration != "[ION_CONCENTRATION]") ? `-conc ${ionConcentration}` : "-neutral"}`,
     6: `gmx grompp -f minim.mdp -c ${proteinId}_ions.gro -p topol.top -o ${proteinId}_em.tpr\ngmx mdrun -v -deffnm ${proteinId}_em\ngmx energy -f ${proteinId}_em.edr -o ${proteinId}.potential.xvg`,
     7: `gmx grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr\ngmx mdrun -deffnm ${proteinId}_nvt -nb gpu`,
     8: `gmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\ngmx grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\ngmx mdrun -deffnm ${proteinId}_npt -nb gpu\ngmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\ngmx energy -f ${proteinId}_npt.edr -o ${proteinId}_density.xvg`,

@@ -70,7 +70,8 @@ export default function SimulationStep() {
 
   // Get allowed water models for the selected force field
   const getAllowedWaterModels = (): WaterModel[] => {
-    const forceField = simulation.currentSimulation?.simulation_params?.forceField;
+    const forceField =
+      simulation.currentSimulation?.simulation_params?.forceField;
     if (!forceField) return Object.values(WaterModels);
     return ForceFieldToWaterModelMap[forceField] || Object.values(WaterModels);
   };
@@ -246,46 +247,51 @@ export default function SimulationStep() {
           <div className="gap-4 flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-2">Add ions to the box</h2>
             <p>Select the ion types to neutralize the system.</p>
-            <div className="flex flex-col md:flex-row gap-4 mt-4 w-full">
-              <ControlledCombobox
-                label="Positive Ion"
-                items={Object.values(PositiveIonTypes)}
-                value={params?.positiveIon}
-                onChange={(value) =>
-                  simulation.updatePositiveIon(value as PositiveIonType)
-                }
-              />
-              <ControlledCombobox
-                label="Negative Ion"
-                items={Object.values(NegativeIonTypes)}
-                value={params?.negativeIon}
-                onChange={(value) =>
-                  simulation.updateNegativeIon(value as NegativeIonType)
-                }
-              />
-              <ControlledCombobox
-                label="Solvent Group"
-                //TODO: replace this with actual supported solvent groups once we have them defined
-                items={["SOL", "WAT", "HOH"]}
-                value={(params as any)?.solventGroup}
-                onChange={(value) => simulation.updateSolventGroup(value)}
-              />
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">
-                  Ion Concentration (M)
-                </label>
-                <Input
-                  type="number"
-                  placeholder="0.15"
-                  step="0.05"
-                  min="0"
-                  value={(params as any)?.ion_concentration}
-                  onChange={(e) =>
-                    simulation.updateIonConcentration(
-                      parseFloat(e.target.value) || 0,
-                    )
+            <div className="flex flex-col gap-8 mt-4">
+              <div className="flex flex-row gap-4">
+                <ControlledCombobox
+                  label="Positive Ion"
+                  items={Object.values(PositiveIonTypes)}
+                  value={params?.positiveIon}
+                  onChange={(value) =>
+                    simulation.updatePositiveIon(value as PositiveIonType)
                   }
                 />
+                <ControlledCombobox
+                  label="Negative Ion"
+                  items={Object.values(NegativeIonTypes)}
+                  value={params?.negativeIon}
+                  onChange={(value) =>
+                    simulation.updateNegativeIon(value as NegativeIonType)
+                  }
+                />
+              </div>
+
+              <div className="flex flex-row w-full gap-4">
+                <ControlledCombobox
+                  label="Solvent Group"
+                  //TODO: replace this with actual supported solvent groups once we have them defined
+                  items={["SOL", "WAT", "HOH"]}
+                  value={(params as any)?.solventGroup}
+                  onChange={(value) => simulation.updateSolventGroup(value)}
+                />
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium">
+                    Ion Concentration (M)
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="0.15"
+                    step="0.05"
+                    min="0"
+                    value={(params as any)?.ion_concentration}
+                    onChange={(e) =>
+                      simulation.updateIonConcentration(
+                        parseFloat(e.target.value) || 0,
+                      )
+                    }
+                  />
+                </div>
               </div>
             </div>
             <CodeBlock
