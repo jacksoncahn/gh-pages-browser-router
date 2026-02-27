@@ -181,12 +181,17 @@ export default function SimulationStep() {
             <h2 className="text-2xl font-bold mb-2">Fill the box with water</h2>
             <p>Define the box dimensions and type for solvation.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 w-full">
-              <ControlledCombobox
-                label="Distance"
-                items={["1.0", "1.2", "1.5", "2.0"]}
-                value={(params as any)?.boxDistance}
-                onChange={(value) => simulation.updateBoxDistance(value)}
-              />
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">Distance (nm)</label>
+                <Input
+                  type="number"
+                  placeholder="1.0"
+                  step="0.1"
+                  min="0.1"
+                  value={(params as any)?.boxDistance || ""}
+                  onChange={(e) => simulation.updateBoxDistance(parseFloat(e.target.value) || 0)}
+                />
+              </div>
               <ControlledCombobox
                 label="Box Type"
                 items={Object.values(BoxTypes)}
@@ -233,14 +238,17 @@ export default function SimulationStep() {
                 value={(params as any)?.solventGroup}
                 onChange={(value) => simulation.updateSolventGroup(value)}
               />
-              <ControlledCombobox
-                label="Ion Concentration"
-                items={["0.1", "0.15", "0.2", "0.5", "1.0"]}
-                value={(params as any)?.ion_concentration?.toString()}
-                onChange={(value) =>
-                  simulation.updateIonConcentration(parseFloat(value))
-                }
-              />
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">Ion Concentration (M)</label>
+                <Input
+                  type="number"
+                  placeholder="0.15"
+                  step="0.05"
+                  min="0"
+                  value={(params as any)?.ion_concentration}
+                  onChange={(e) => simulation.updateIonConcentration(parseFloat(e.target.value) || 0)}
+                />
+              </div>
             </div>
             <CodeBlock
               code={generateStepCommand(

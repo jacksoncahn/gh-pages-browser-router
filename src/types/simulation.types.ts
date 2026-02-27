@@ -15,6 +15,7 @@ export type SimulationParams = {
   forceField: ForceField
   waterModel: WaterModel
   boxType: BoxType
+  boxDistance: number
   positiveIon: PositiveIonType
   negativeIon: NegativeIonType
   ion_concentration: number

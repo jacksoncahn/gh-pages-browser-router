@@ -22,7 +22,7 @@ interface SimulationContextType {
   updateProteinId: (proteinId: string) => void;
   updateForceField: (forceField: ForceField) => void;
   updateWaterModel: (waterModel: WaterModel) => void;
-  updateBoxDistance: (distance: string) => void;
+  updateBoxDistance: (distance: number) => void;
   updateBoxType: (boxType: BoxType) => void;
   updatePositiveIon: (ion: PositiveIonType) => void;
   updateNegativeIon: (ion: NegativeIonType) => void;
@@ -120,7 +120,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     updateSimulationParams({ waterModel });
   };
 
-  const updateBoxDistance = (distance: string) => {
+  const updateBoxDistance = (distance: number) => {
     updateSimulationParams({ boxDistance: distance } as any);
   };
 
