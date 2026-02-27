@@ -4,7 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, Copy, Download } from "lucide-react";
 import { useParams, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
-import { getSimulationById } from "@/utils/localStorage";
+import { getSimulationById } from "@/utils/simulation.utils";
+import { generateCompleteBashScript } from "@/utils/gromacs.utils";
+import { downloadTextFile, copyToClipboard } from "@/utils/download.utils";
 import type { Simulation } from "@/types/simulation.types";
 
 export default function SimulationDetail() {
@@ -20,95 +22,20 @@ export default function SimulationDetail() {
     }
   }, [id]);
 
-  const getCompleteBashScript = (): string => {
-    if (!simulation) return "";
-
-    const params = simulation.simulation_params;
-    const simName = simulation.simName || "Unknown Simulation";
-
-    return `#!/bin/bash
-# GROMACS Molecular Dynamics Simulation Script
-# Simulation Name: ${simName}
-# Generated: ${new Date(simulation.created_at).toLocaleString()}
-
-# ===== CONFIGURATION =====
-# Protein: ${params?.proteinId || "[PDB_ID]"}
-# Force Field: ${params?.forceField || "[FORCE_FIELD]"}
-# Water Model: ${params?.waterModel || "[WATER_MODEL]"}
-# Box Type: ${params?.boxType || "[BOX_TYPE]"}
-# Box Distance: ${(params as any)?.boxDistance || "[DISTANCE]"} nm
-# Positive Ion: ${params?.positiveIon || "[POSITIVE_ION]"}
-# Negative Ion: ${params?.negativeIon || "[NEGATIVE_ION]"}
-# Solvent Group: ${(params as any)?.solventGroup || "[SOLVENT_GROUP]"}
-# Ion Concentration: ${params?.ion_concentration || "[ION_CONCENTRATION]"} M
-
-echo "Starting GROMACS simulation: ${simName}"
-
-# ===== STEP 1: Download Protein Structure =====
-echo "Step 1: Downloading protein structure..."
-# TODO: add protein download command here
-
-# ===== STEP 2: Create Topology =====
-echo "Step 2: Creating topology..."
-gmx pdb2gmx -f ${params?.proteinId || "[PDB_ID]"}.pdb -o ${params?.proteinId || "[PDB_ID]"}.gro -water ${params?.waterModel || "[WATER_MODEL]"} -ff ${params?.forceField || "[FORCE_FIELD]"}
-
-# ===== STEP 3: Define Box and Solvate =====
-echo "Step 3: Defining box and solvating..."
-gmx editconf -f ${params?.proteinId || "[PDB_ID]"}.gro -o ${params?.proteinId || "[PDB_ID]"}_box.gro -c -d ${(params as any)?.boxDistance || "[DISTANCE]"} -bt ${params?.boxType || "[BOX_TYPE]"} 
-gmx solvate -cp ${params?.proteinId || "[PDB_ID]"}_inBox.gro -o ${params?.proteinId || "[PDB_ID]"}_inSolution.gro -p topol.top -cs ${params?.waterModel || "[WATER_MODEL]"}.gro
-
-# ===== STEP 4: Add Ions =====
-echo "Step 4: Adding ions..."
-gmx grompp -f ions.mdp -c ${params?.proteinId || "[PDB_ID]"}_inSolution.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_ions.tpr
-gmx genion -s ${params?.proteinId || "[PDB_ID]"}_ions.tpr -o ${params?.proteinId || "[PDB_ID]"}_ions.gro -p topol.top -pname ${params?.positiveIon || "[POSITIVE_ION]"} -nname ${params?.negativeIon || "[NEGATIVE_ION]"} -conc ${params?.ion_concentration || "[ION_CONCENTRATION]"}
-
-# ===== STEP 5: Energy Minimization =====
-echo "Step 5: Running energy minimization..."
-gmx grompp -f minim.mdp -c ${params?.proteinId || "[PDB_ID]"}_ions.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_em.tpr
-gmx mdrun -v -deffnm ${params?.proteinId || "[PDB_ID]"}_em
-gmx energy -f ${params?.proteinId || "[PDB_ID]"}_em.edr -o ${params?.proteinId || "[PDB_ID]"}.potential.xvg
-
-# ===== STEP 6: NVT Equilibration =====
-echo "Step 6: Running NVT equilibration..."
-gmx grompp -f nvt.mdp -c ${params?.proteinId || "[PDB_ID]"}_em.gro -r ${params?.proteinId || "[PDB_ID]"}_em.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_nvt.tpr
-gmx mdrun -deffnm ${params?.proteinId || "[PDB_ID]"}_nvt -nb gpu
-
-# ===== STEP 7: NPT Equilibration and Validation =====
-echo "Step 7: Running NPT equilibration and validation..."
-gmx energy -f ${params?.proteinId || "[PDB_ID]"}_nvt.edr -o ${params?.proteinId || "[PDB_ID]"}_temperature.xvg
-gmx grompp -f npt.mdp -c ${params?.proteinId || "[PDB_ID]"}_nvt.gro -r ${params?.proteinId || "[PDB_ID]"}_nvt.gro -t ${params?.proteinId || "[PDB_ID]"}_nvt.cpt -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_npt.tpr
-gmx mdrun -deffnm ${params?.proteinId || "[PDB_ID]"}_npt -nb gpu
-gmx energy -f ${params?.proteinId || "[PDB_ID]"}_npt.edr -o ${params?.proteinId || "[PDB_ID]"}_pressure.xvg
-gmx energy -f ${params?.proteinId || "[PDB_ID]"}_npt.edr -o ${params?.proteinId || "[PDB_ID]"}_density.xvg
-
-# ===== STEP 8: Production MD =====
-echo "Step 8: Running production MD..."
-gmx grompp -f md.mdp -c ${params?.proteinId || "[PDB_ID]"}_npt.gro -t ${params?.proteinId || "[PDB_ID]"}_npt.cpt -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_md.tpr
-gmx mdrun -deffnm ${params?.proteinId || "[PDB_ID]"}_md -nb gpu
-
-echo "Simulation complete!"
-`;
+  const handleCopyScript = async () => {
+    const script = generateCompleteBashScript(simulation, false);
+    const success = await copyToClipboard(script);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
-  const copyScript = () => {
-    const script = getCompleteBashScript();
-    navigator.clipboard.writeText(script);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const downloadBashScript = () => {
-    const script = getCompleteBashScript();
+  const handleDownloadBashScript = () => {
+    const script = generateCompleteBashScript(simulation, false);
     const simName = simulation?.simName || "simulation";
-    const blob = new Blob([script], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${simName.replace(/\s+/g, "_")}_gromacs.sh`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const filename = `${simName.replace(/\s+/g, "_")}_gromacs.sh`;
+    downloadTextFile(script, filename);
   };
 
   if (!simulation) {
@@ -241,14 +168,20 @@ echo "Simulation complete!"
           <h2 className="text-xl font-semibold mb-4">GROMACS Script</h2>
           <div className="relative flex flex-col gap-2">
             <pre className="bg-card p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word max-h-96 overflow-y-auto text-left border">
-              <code className="text-xs">{getCompleteBashScript()}</code>
+              <code className="text-xs">
+                {generateCompleteBashScript(simulation, false)}
+              </code>
             </pre>
             <div className="flex gap-2 justify-end">
-              <Button size="sm" variant="outline" onClick={copyScript}>
+              <Button size="sm" variant="outline" onClick={handleCopyScript}>
                 <Copy className="mr-2 h-4 w-4" />
                 {copied ? "Copied!" : "Copy Script"}
               </Button>
-              <Button size="sm" variant="default" onClick={downloadBashScript}>
+              <Button
+                size="sm"
+                variant="default"
+                onClick={handleDownloadBashScript}
+              >
                 <Download className="mr-2 h-4 w-4" />
                 Download .sh
               </Button>

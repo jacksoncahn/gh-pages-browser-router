@@ -1,17 +1,17 @@
 import { useParams, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@/components/ui/combobox";
 import { Copy, Download } from "lucide-react";
 import { useState } from "react";
 import { useSimulation } from "@/contexts/SimulationContext";
+import { ControlledCombobox } from "@/components/shared/ControlledCombobox";
+import { CheckboxItem } from "@/components/shared/CheckboxItem";
+import { CodeBlock } from "@/components/shared/CodeBlock";
+import {
+  generateStepCommand,
+  generateCompleteBashScript,
+} from "@/utils/gromacs.utils";
+import { downloadTextFile, copyToClipboard } from "@/utils/download.utils";
 import {
   ForceFields,
   PositiveIonTypes,
@@ -30,8 +30,24 @@ export default function SimulationStep() {
   const navigate = useNavigate();
   const currentStep = parseInt(stepNumber || "1");
   const totalSteps = 9;
-  const [copied, setCopied] = useState(false);
   const simulation = useSimulation();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyBashScript = async () => {
+    const script = generateCompleteBashScript(simulation.currentSimulation);
+    const success = await copyToClipboard(script);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDownloadBashScript = () => {
+    const script = generateCompleteBashScript(simulation.currentSimulation);
+    const simName = simulation.currentSimulation?.simName || "simulation";
+    const filename = `${simName.replace(/\s+/g, "_")}_gromacs.sh`;
+    downloadTextFile(script, filename);
+  };
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -79,181 +95,6 @@ export default function SimulationStep() {
     }
   };
 
-  // Helper component for controlled combobox
-  const ControlledCombobox = ({
-    label,
-    items,
-    value,
-    onChange,
-  }: {
-    label: string;
-    items: string[];
-    value?: string;
-    onChange: (value: string) => void;
-  }) => (
-    <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium">{label}</label>
-      <Combobox
-        items={items}
-        value={value ?? null}
-        onValueChange={(val) => val && onChange(val)}
-      >
-        <ComboboxInput placeholder={`Select ${label.toLowerCase()}`} />
-        <ComboboxContent>
-          <ComboboxEmpty>No items found.</ComboboxEmpty>
-          <ComboboxList>
-            {(item) => (
-              <ComboboxItem key={item} value={item}>
-                {item}
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
-    </div>
-  );
-
-  // Helper component for checkbox
-  const CheckboxItem = ({
-    label,
-    checked,
-    onChange,
-  }: {
-    label: string;
-    checked: boolean;
-    onChange: (checked: boolean) => void;
-  }) => (
-    <div className="flex items-center gap-2">
-      <input
-        type="checkbox"
-        id={label}
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="w-4 h-4 rounded border-gray-300"
-      />
-      <label htmlFor={label} className="text-sm font-medium cursor-pointer">
-        {label}
-      </label>
-    </div>
-  );
-
-  // Generate GROMACS commands with actual values
-  const getStepCode = (step: number): string => {
-    const params = simulation.currentSimulation?.simulation_params;
-    const codes: { [key: number]: string } = {
-      2: "TODO: add protein download command here",
-      3: `gmx pdb2gmx -f ${params?.proteinId || "[PDB_ID]"}.pdb -o ${params?.proteinId || "[PDB_ID]"}.gro -water ${params?.waterModel || "[WATER_MODEL]"} -ff ${params?.forceField || "[FORCE_FIELD]"}`,
-      4: `gmx editconf -f ${params?.proteinId || "[PDB_ID]"}.gro -o ${params?.proteinId || "[PDB_ID]"}_box.gro -c -d ${(params as any)?.boxDistance || "[DISTANCE]"} -bt ${params?.boxType || "[BOX_TYPE]"} \ngmx solvate -cp ${params?.proteinId || "[PDB_ID]"}_inBox.gro -o ${params?.proteinId || "[PDB_ID]"}_inSolution.gro -p topol.top -cs ${params?.waterModel || "[WATER_MODEL]"}.gro`,
-      //TODO from here
-      5: `gmx grompp -f ions.mdp -c ${params?.proteinId || "[PDB_ID]"}_inSolution.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_ions.tpr\ngmx genion -s ${params?.proteinId || "[PDB_ID]"}_ions.tpr -o ${params?.proteinId || "[PDB_ID]"}_ions.gro -p topol.top -pname ${params?.positiveIon || "[POSITIVE_ION]"} -nname ${params?.negativeIon || "[NEGATIVE_ION]"} -conc ${params?.ion_concentration || "[ION_CONCENTRATION]"}`,
-      6: `gmx grompp -f minim.mdp -c ${params?.proteinId || "[PDB_ID]"}_ions.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_em.tpr\ngmx mdrun -v -deffnm ${params?.proteinId || "[PDB_ID]"}_em\ngmx energy -f ${params?.proteinId || "[PDB_ID]"}_em.edr -o ${params?.proteinId || "[PDB_ID]"}.potential.xvg`,
-      7: `gmx grompp -f nvt.mdp -c ${params?.proteinId || "[PDB_ID]"}_em.gro -r ${params?.proteinId || "[PDB_ID]"}_em.gro -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_nvt.tpr\ngmx mdrun -deffnm ${params?.proteinId || "[PDB_ID]"}_nvt -nb gpu`,
-      8: `gmx energy -f ${params?.proteinId || "[PDB_ID]"}_nvt.edr -o ${params?.proteinId || "[PDB_ID]"}_temperature.xvg\ngrompp -f npt.mdp -c ${params?.proteinId || "[PDB_ID]"}_nvt.gro -r ${params?.proteinId || "[PDB_ID]"}_nvt.gro -t ${params?.proteinId || "[PDB_ID]"}_nvt.cpt -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_npt.tpr\ngmx mrun -deffnm ${params?.proteinId || "[PDB_ID]"}_npt -nb gpu\ngmx energy -f ${params?.proteinId || "[PDB_ID]"}_npt.edr -o ${params?.proteinId || "[PDB_ID]"}_pressure.xvg\ngmx energy -f ${params?.proteinId || "[PDB_ID]"}_npt.edr -o ${params?.proteinId || "[PDB_ID]"}_density.xvg`,
-      9: `gmx grompp -f md.mdp -c ${params?.proteinId || "[PDB_ID]"}_npt.gro -t ${params?.proteinId || "[PDB_ID]"}_npt.cpt -p topol.top -o ${params?.proteinId || "[PDB_ID]"}_md.tpr\ngmx mdrun -deffnm ${params?.proteinId || "[PDB_ID]"}_md -nb gpu`,
-    };
-    return codes[step] || "";
-  };
-
-  // TODO: confirm that bash script generation is correct and complete once all steps are implemented
-  const getCompleteBashScript = (): string => {
-    const params = simulation.currentSimulation?.simulation_params;
-    const simName =
-      simulation.currentSimulation?.simName || "Unknown Simulation";
-
-    return `#!/bin/bash
-  # GROMACS Molecular Dynamics Simulation Script
-  # Simulation Name: ${simName}
-  # Generated: ${new Date().toISOString()}
-
-  # ===== CONFIGURATION =====
-  # Protein: ${params?.proteinId || "[PDB_ID]"}
-  # Force Field: ${params?.forceField || "[FORCE_FIELD]"}
-  # Water Model: ${params?.waterModel || "[WATER_MODEL]"}
-  # Box Type: ${params?.boxType || "[BOX_TYPE]"}
-  # Box Distance: ${(params as any)?.boxDistance || "[DISTANCE]"} nm
-  # Positive Ion: ${params?.positiveIon || "[POSITIVE_ION]"}
-  # Negative Ion: ${params?.negativeIon || "[NEGATIVE_ION]"}
-  # Solvent Group: ${(params as any)?.solventGroup || "[SOLVENT_GROUP]"}
-  # Ion Concentration: ${(params as any)?.ion_concentration || "[ION_CONCENTRATION]"} M
-
-  echo "Starting GROMACS simulation: ${simName}"
-
-  # ===== STEP 1: Download Protein Structure =====
-  echo "Step 1: Downloading protein structure..."
-  ${getStepCode(2)}
-
-  # ===== STEP 2: Create Topology =====
-  echo "Step 2: Creating topology..."
-  ${getStepCode(3)}
-
-  # ===== STEP 3: Define Box and Solvate =====
-  echo "Step 3: Defining box and solvating..."
-  ${getStepCode(4)}
-
-  # ===== STEP 4: Add Ions =====
-  echo "Step 4: Adding ions..."
-  ${getStepCode(5)}
-
-  # ===== STEP 5: Energy Minimization =====
-  echo "Step 5: Running energy minimization..."
-  ${getStepCode(6)}
-
-  # ===== STEP 6: NVT Equilibration =====
-  echo "Step 6: Running NVT equilibration..."
-  ${getStepCode(7)}
-
-  # ===== STEP 7: NPT Equilibration and Validation =====
-  echo "Step 7: Running NPT equilibration and validation..."
-  ${getStepCode(8)}
-
-  # ===== STEP 8: Production MD =====
-  echo "Step 8: Running production MD..."
-  ${getStepCode(9)}
-
-  echo "Simulation complete!"
-  `;
-  };
-
-  const copyCode = () => {
-    const code = getStepCode(currentStep);
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const copyCompleteScript = () => {
-    const script = getCompleteBashScript();
-    navigator.clipboard.writeText(script);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const downloadBashScript = () => {
-    const script = getCompleteBashScript();
-    const simName = simulation.currentSimulation?.simName || "simulation";
-    const blob = new Blob([script], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${simName.replace(/\s+/g, "_")}_gromacs.sh`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const CodeBlock = () => (
-    <div className="mt-6 relative flex flex-row items-center gap-4">
-      <pre className="bg-card p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word">
-        <code className="text-sm">{getStepCode(currentStep)}</code>
-      </pre>
-      <Button size="sm" variant="outline" onClick={copyCode}>
-        <Copy className="mr-2 h-4 w-4" />
-        {copied ? "Copied!" : "Copy"}
-      </Button>
-    </div>
-  );
-
   const renderStepContent = () => {
     const params = simulation.currentSimulation?.simulation_params;
 
@@ -291,7 +132,12 @@ export default function SimulationStep() {
               value={params?.proteinId || ""}
               onChange={(e) => simulation.updateProteinId(e.target.value)}
             />
-            <CodeBlock />
+            <CodeBlock
+              code={generateStepCommand(
+                currentStep,
+                simulation.currentSimulation?.simulation_params,
+              )}
+            />
           </div>
         );
 
@@ -319,7 +165,12 @@ export default function SimulationStep() {
                 }
               />
             </div>
-            <CodeBlock />
+            <CodeBlock
+              code={generateStepCommand(
+                currentStep,
+                simulation.currentSimulation?.simulation_params,
+              )}
+            />
           </div>
         );
 
@@ -343,7 +194,12 @@ export default function SimulationStep() {
                 onChange={(value) => simulation.updateBoxType(value as BoxType)}
               />
             </div>
-            <CodeBlock />
+            <CodeBlock
+              code={generateStepCommand(
+                currentStep,
+                simulation.currentSimulation?.simulation_params,
+              )}
+            />
           </div>
         );
 
@@ -386,7 +242,12 @@ export default function SimulationStep() {
                 }
               />
             </div>
-            <CodeBlock />
+            <CodeBlock
+              code={generateStepCommand(
+                currentStep,
+                simulation.currentSimulation?.simulation_params,
+              )}
+            />
           </div>
         );
 
@@ -399,7 +260,12 @@ export default function SimulationStep() {
               Energy minimization will be performed using default parameters.
               Advanced users can conduct their own version of this step.
             </p>
-            <CodeBlock />
+            <CodeBlock
+              code={generateStepCommand(
+                currentStep,
+                simulation.currentSimulation?.simulation_params,
+              )}
+            />
           </div>
         );
 
@@ -409,7 +275,12 @@ export default function SimulationStep() {
           <div className="gap-4 flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-2">Equilibriate the system</h2>
             <p>NVT equilibration will be performed to stabilize temperature.</p>
-            <CodeBlock />
+            <CodeBlock
+              code={generateStepCommand(
+                currentStep,
+                simulation.currentSimulation?.simulation_params,
+              )}
+            />
           </div>
         );
 
@@ -442,7 +313,12 @@ export default function SimulationStep() {
                 }
               />
             </div>
-            <CodeBlock />
+            <CodeBlock
+              code={generateStepCommand(
+                currentStep,
+                simulation.currentSimulation?.simulation_params,
+              )}
+            />
           </div>
         );
 
@@ -465,13 +341,15 @@ export default function SimulationStep() {
               <h3 className="font-semibold mb-2">Complete GROMACS Script</h3>
               <div className="relative flex flex-col gap-2">
                 <pre className="bg-card p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word max-h-96 overflow-y-auto text-left">
-                  <code className="text-xs">{getCompleteBashScript()}</code>
+                  <code className="text-xs">
+                    {generateCompleteBashScript(simulation.currentSimulation)}
+                  </code>
                 </pre>
                 <div className="flex gap-2 justify-end">
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={copyCompleteScript}
+                    onClick={handleCopyBashScript}
                   >
                     <Copy className="mr-2 h-4 w-4" />
                     {copied ? "Copied!" : "Copy Script"}
@@ -479,7 +357,7 @@ export default function SimulationStep() {
                   <Button
                     size="sm"
                     variant="default"
-                    onClick={downloadBashScript}
+                    onClick={handleDownloadBashScript}
                   >
                     <Download className="mr-2 h-4 w-4" />
                     Download .sh

@@ -1,7 +1,7 @@
 import { SimulationCard } from "@/components/dashboard/simulation-card";
 import { NavBar } from "@/components/shared/nav-bar";
 import type { Simulation } from "@/types/simulation.types";
-import { getAllSimulations } from "@/utils/localStorage";
+import { getAllSimulations } from "@/utils/simulation.utils";
 import { useState, useEffect } from "react";
 
 export default function Dashboard() {

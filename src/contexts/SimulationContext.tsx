@@ -14,7 +14,7 @@ import type {
   PositiveIonType,
   NegativeIonType,
 } from "@/types/simulation.types";
-import { saveSimulation, generateSimulationId } from "@/utils/localStorage";
+import { saveSimulation, generateSimulationId } from "@/utils/simulation.utils";
 
 interface SimulationContextType {
   currentSimulation: Partial<Simulation> | null;
@@ -142,7 +142,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
 
   const updateIonConcentration = (concentration: number) => {
     updateSimulationParams({ ion_concentration: concentration } as any);
-  }
+  };
 
   const updateVerification = (
     field: "temperature" | "pressure" | "system_volume",
