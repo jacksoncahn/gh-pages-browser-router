@@ -18,6 +18,7 @@ import {
   NegativeIonTypes,
   WaterModels,
   BoxTypes,
+  ForceFieldToWaterModelMap,
   type PositiveIonType,
   type NegativeIonType,
   type ForceField,
@@ -33,6 +34,7 @@ export default function SimulationStep() {
   const simulation = useSimulation();
   const [copied, setCopied] = useState(false);
 
+  // bash script handlers
   const handleCopyBashScript = async () => {
     const script = generateCompleteBashScript(simulation.currentSimulation);
     const success = await copyToClipboard(script);
@@ -49,6 +51,7 @@ export default function SimulationStep() {
     downloadTextFile(script, filename);
   };
 
+  // navigation handlers
   const handleNext = () => {
     if (currentStep < totalSteps) {
       navigate(`/simulation/new/${currentStep + 1}`);
@@ -62,6 +65,26 @@ export default function SimulationStep() {
   const handlePrevious = () => {
     if (currentStep > 1) {
       navigate(`/simulation/new/${currentStep - 1}`);
+    }
+  };
+
+  // Get allowed water models for the selected force field
+  const getAllowedWaterModels = (): WaterModel[] => {
+    const forceField = simulation.currentSimulation?.simulation_params?.forceField;
+    if (!forceField) return Object.values(WaterModels);
+    return ForceFieldToWaterModelMap[forceField] || Object.values(WaterModels);
+  };
+
+  // Handle force field change with water model validation
+  const handleForceFieldChange = (newForceField: ForceField) => {
+    simulation.updateForceField(newForceField);
+
+    const currentWaterModel =
+      simulation.currentSimulation?.simulation_params?.waterModel;
+    const allowedModels = ForceFieldToWaterModelMap[newForceField];
+
+    if (currentWaterModel && !allowedModels.includes(currentWaterModel)) {
+      simulation.updateWaterModel("" as WaterModel);
     }
   };
 
@@ -153,15 +176,20 @@ export default function SimulationStep() {
                 items={Object.values(ForceFields)}
                 value={params?.forceField}
                 onChange={(value) =>
-                  simulation.updateForceField(value as ForceField)
+                  handleForceFieldChange(value as ForceField)
                 }
               />
               <ControlledCombobox
                 label="Water Model"
-                items={Object.values(WaterModels)}
+                items={getAllowedWaterModels()}
                 value={params?.waterModel}
                 onChange={(value) =>
                   simulation.updateWaterModel(value as WaterModel)
+                }
+                placeholder={
+                  params?.forceField
+                    ? "Select water model"
+                    : "Select force field first"
                 }
               />
             </div>
@@ -189,7 +217,11 @@ export default function SimulationStep() {
                   step="0.1"
                   min="0.1"
                   value={(params as any)?.boxDistance || ""}
-                  onChange={(e) => simulation.updateBoxDistance(parseFloat(e.target.value) || 0)}
+                  onChange={(e) =>
+                    simulation.updateBoxDistance(
+                      parseFloat(e.target.value) || 0,
+                    )
+                  }
                 />
               </div>
               <ControlledCombobox
@@ -239,14 +271,20 @@ export default function SimulationStep() {
                 onChange={(value) => simulation.updateSolventGroup(value)}
               />
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Ion Concentration (M)</label>
+                <label className="text-sm font-medium">
+                  Ion Concentration (M)
+                </label>
                 <Input
                   type="number"
                   placeholder="0.15"
                   step="0.05"
                   min="0"
                   value={(params as any)?.ion_concentration}
-                  onChange={(e) => simulation.updateIonConcentration(parseFloat(e.target.value) || 0)}
+                  onChange={(e) =>
+                    simulation.updateIonConcentration(
+                      parseFloat(e.target.value) || 0,
+                    )
+                  }
                 />
               </div>
             </div>

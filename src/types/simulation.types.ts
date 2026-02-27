@@ -29,21 +29,27 @@ export type SimulationParams = {
 /* FORCE FIELDS */
 export const ForceFields = {
   // GROMACS supported AMBER force fields
-  AMBER94: "AMBER94",
-  AMBER96: "AMBER96",
-  AMBER99: "AMBER99",
-  AMBER99SB: "AMBER99SB",
-  AMBER99SB_ILDN: "AMBER99SB-ILDN",
-  AMBER03: "AMBER03",
-  AMBER14SB: "AMBER14SB",
-  AMBER19SB: "AMBER19SB",
-  AMBERGS: "AMBERGS",
+  AMBER03: "amber03",
+  AMBER94: "amber94",
+  AMBER96: "amber96",
+  AMBER99: "amber99",
+  AMBER99SB: "amber99sb",
+  AMBER99SB_ILDN: "amber99sb-ildn,",
+  AMBERGS: "ambergs",
 
   // only officially GROMACS supported CHARMM force field
-  CHARMM27: "CHARMM27",
+  CHARMM27: "charmm27",
+
+  // GROMOS forcefields
+  GROMOS43A1: "gromos43a1",
+  GROMOS43A2: "gromos43a2",
+  GROMOS45A3: "gromos45a3",
+  GROMOS53A5: "gromos53a5",
+  GROMOS53A6: "gromos53a6",
+  GROMOS54A7: "gromos54a7",
 
   // GROMACS supported OPLS force fields 
-  OPLS_AA_M: "OPLS-AA/M",
+  OPLS_AA_L: "oplsaa",
 } as const
 
 export const ForceField = z.union([
@@ -52,37 +58,64 @@ export const ForceField = z.union([
   z.literal(ForceFields.AMBER99),
   z.literal(ForceFields.AMBER99SB),
   z.literal(ForceFields.AMBER99SB_ILDN),
-  z.literal(ForceFields.AMBER03),
-  z.literal(ForceFields.AMBER14SB),
-  z.literal(ForceFields.AMBER19SB),
   z.literal(ForceFields.AMBERGS),
   z.literal(ForceFields.CHARMM27),
-  z.literal(ForceFields.OPLS_AA_M)
+  z.literal(ForceFields.GROMOS43A1),
+  z.literal(ForceFields.GROMOS43A2),
+  z.literal(ForceFields.GROMOS45A3),
+  z.literal(ForceFields.GROMOS53A5),
+  z.literal(ForceFields.GROMOS53A6),
+  z.literal(ForceFields.GROMOS54A7),
+  z.literal(ForceFields.OPLS_AA_L)
 ])
 
 export type ForceField = z.infer<typeof ForceField>
 
 /* WATER MODELS */
 export const WaterModels = {
+  SPC: "spc",
+  SPC_E: "spce",
   SPC216: "SPC216",
-  TIP3P: "TIP3P",
-  TIP4P: "TIP4P",
-  TIP4P_EW: "TIP4P-Ew",
-  TIP5P: "TIP5P",
+  TIP3P: "tip3p",
+  TIPS3P: "TIPS3P",
+  TIP4P: "tip4p",
+  TIP4P_EW: "tip4pew",
+  TIP5P: "tip5p",
+  TIP5_PE: "tip5pe",
   None: "None",
-  //TODO: add other supported water models
 } as const
 
 export const WaterModel = z.union([
   z.literal(WaterModels.SPC216),
   z.literal(WaterModels.TIP3P),
+  z.literal(WaterModels.TIPS3P),
   z.literal(WaterModels.TIP4P),
   z.literal(WaterModels.TIP4P_EW),
   z.literal(WaterModels.TIP5P),
+  z.literal(WaterModels.TIP5_PE),
+  z.literal(WaterModels.SPC),
+  z.literal(WaterModels.SPC_E),
   z.literal(WaterModels.None)
 ])
 
 export type WaterModel = z.infer<typeof WaterModel>
+
+export const ForceFieldToWaterModelMap: Record<ForceField, WaterModel[]> = {
+  [ForceFields.AMBER94]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E, WaterModels.TIP3P, WaterModels.TIP4P, WaterModels.TIP4P_EW, WaterModels.TIP5P],
+  [ForceFields.AMBER96]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E, WaterModels.TIP3P, WaterModels.TIP4P, WaterModels.TIP4P_EW, WaterModels.TIP5P],
+  [ForceFields.AMBER99]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E, WaterModels.TIP3P, WaterModels.TIP4P, WaterModels.TIP4P_EW, WaterModels.TIP5P],
+  [ForceFields.AMBER99SB]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E, WaterModels.TIP3P, WaterModels.TIP4P, WaterModels.TIP4P_EW, WaterModels.TIP5P],
+  [ForceFields.AMBER99SB_ILDN]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E, WaterModels.TIP3P, WaterModels.TIP4P, WaterModels.TIP4P_EW, WaterModels.TIP5P],
+  [ForceFields.AMBERGS]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E, WaterModels.TIP3P, WaterModels.TIP4P, WaterModels.TIP4P_EW, WaterModels.TIP5P],
+  [ForceFields.CHARMM27]: [WaterModels.None, WaterModels.TIP3P, WaterModels.TIP4P, WaterModels.TIPS3P, WaterModels.TIP5P, WaterModels.SPC, WaterModels.SPC_E],
+  [ForceFields.GROMOS43A1]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E],
+  [ForceFields.GROMOS43A2]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E],
+  [ForceFields.GROMOS45A3]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E],
+  [ForceFields.GROMOS53A5]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E],
+  [ForceFields.GROMOS53A6]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E],
+  [ForceFields.GROMOS54A7]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E],
+  [ForceFields.OPLS_AA_L]: [WaterModels.None, WaterModels.TIP4P, WaterModels.TIP4P_EW, WaterModels.TIP3P,  WaterModels.TIP5P, WaterModels.TIP5_PE, WaterModels.SPC, WaterModels.SPC_E],
+} 
 
 /* BOX TYPES */
 export const BoxTypes = {
