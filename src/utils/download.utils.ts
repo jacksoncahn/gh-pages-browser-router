@@ -31,3 +31,36 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Generates the download URL for a PDB file from RCSB PDB.
+ * 
+ * @param pdbId - The PDB ID (e.g., "1AKI")
+ * @returns The full download URL
+ */
+export function generatePDBDownloadUrl(pdbId: string): string {
+  const cleanId = pdbId.trim().toUpperCase();
+  return `https://files.rcsb.org/download/${cleanId}.pdb`;
+}
+
+/**
+ * Downloads a PDB file from RCSB PDB database.
+ * Opens the download URL in a new window, triggering browser's download.
+ * 
+ * @param pdbId - The PDB ID (e.g., "1AKI")
+ */
+export function downloadPDBFile(pdbId: string): void {
+  if (!pdbId || !pdbId.trim()) {
+    console.error("Invalid PDB ID");
+    return;
+  }
+  
+  const url = generatePDBDownloadUrl(pdbId);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `${pdbId.trim().toUpperCase()}.pdb`;
+  anchor.target = "_blank";
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+}

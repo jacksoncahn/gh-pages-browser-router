@@ -34,7 +34,7 @@ export const ForceFields = {
   AMBER96: "amber96",
   AMBER99: "amber99",
   AMBER99SB: "amber99sb",
-  AMBER99SB_ILDN: "amber99sb-ildn,",
+  AMBER99SB_ILDN: "amber99sb-ildn",
   AMBERGS: "ambergs",
 
   // only officially GROMACS supported CHARMM force field

@@ -11,7 +11,7 @@ import {
   generateStepCommand,
   generateCompleteBashScript,
 } from "@/utils/gromacs.utils";
-import { downloadTextFile, copyToClipboard } from "@/utils/download.utils";
+import { downloadTextFile, copyToClipboard, downloadPDBFile } from "@/utils/download.utils";
 import {
   ForceFields,
   PositiveIonTypes,
@@ -89,6 +89,12 @@ export default function SimulationStep() {
     }
   };
 
+  const isValidPDBId = (pdbId: string) => {
+    if (!pdbId) return false;
+    const pdbPattern = /^[0-9][A-Za-z0-9]{3}$/;
+    return pdbPattern.test(pdbId.trim());
+  }
+
   // Check if current step has all required fields filled
   const isCurrentStepValid = (): boolean => {
     const params = simulation.currentSimulation?.simulation_params;
@@ -106,8 +112,7 @@ export default function SimulationStep() {
         return (
           !!params?.positiveIon &&
           !!params?.negativeIon &&
-          !!(params as any)?.solventGroup &&
-          !!(params as any)?.ion_concentration
+          !!(params as any)?.solventGroup 
         );
       case 6:
       case 7:
@@ -150,12 +155,30 @@ export default function SimulationStep() {
               Choose a protein for the simulation
             </h2>
             <p>Enter the PDB ID of the protein you want to simulate.</p>
-            <Input
-              placeholder="e.g. 1A2B"
-              className="mt-2"
-              value={params?.proteinId || ""}
-              onChange={(e) => simulation.updateProteinId(e.target.value)}
-            />
+            <div className="flex flex-col gap-2 w-full max-w-md">
+              <Input
+                placeholder="e.g. 1AKI"
+                className="mt-2"
+                value={params?.proteinId || ""}
+                onChange={(e) =>
+                  simulation.updateProteinId(e.target.value.toUpperCase())
+                }
+              />
+              <Button
+                variant="outline"
+                onClick={() => downloadPDBFile(params?.proteinId || "")}
+                disabled={!isValidPDBId(params?.proteinId || "")}
+                className="w-full"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download {params?.proteinId?.toUpperCase() || "PDB"} File
+              </Button>
+              {params?.proteinId && !isValidPDBId(params.proteinId) && (
+                <p className="text-sm text-destructive">
+                  Invalid PDB ID format. Should be 4 characters (e.g., 1AKI, 108D).
+                </p>
+              )}
+            </div>
             <CodeBlock
               code={generateStepCommand(
                 currentStep,
@@ -214,7 +237,7 @@ export default function SimulationStep() {
                 <label className="text-sm font-medium">Distance (nm)</label>
                 <Input
                   type="number"
-                  placeholder="1.0"
+                  placeholder="e.g. 1.0"
                   step="0.1"
                   min="0.1"
                   value={(params as any)?.boxDistance || ""}
@@ -281,7 +304,7 @@ export default function SimulationStep() {
                   </label>
                   <Input
                     type="number"
-                    placeholder="0.15"
+                    placeholder="e.g. 0.15"
                     step="0.05"
                     min="0"
                     value={(params as any)?.ion_concentration}
@@ -425,8 +448,10 @@ export default function SimulationStep() {
   };
 
   return (
-    <div className="flex flex-col p-6 px-[10%] w-full max-h-full">
-      <div className="w-full">{renderStepContent()}</div>
+    <div className="flex flex-col p-6 px-[10%] w-full h-full max-h-screen">
+      <div className="flex-1 flex items-center justify-center w-full">
+        <div className="w-full">{renderStepContent()}</div>
+      </div>
 
       <div className="flex justify-between border-t pt-4 mt-6 w-full">
         <Button
@@ -437,7 +462,7 @@ export default function SimulationStep() {
           Previous
         </Button>
         <Button onClick={handleNext} disabled={!isCurrentStepValid()}>
-          {currentStep === totalSteps ? "Submit" : "Next"}
+          {currentStep === totalSteps ? "Finish" : "Next"}
         </Button>
       </div>
     </div>

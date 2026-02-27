@@ -22,7 +22,7 @@ export function generateStepCommand(
   const ionConcentration = params?.ion_concentration || "[ION_CONCENTRATION]";
 
   const commands: { [key: number]: string } = {
-    2: "TODO: add protein download command here",
+    2: `wget https://files.rcsb.org/download/${proteinId}.pdb \ngrep -v HOH ${proteinId}.pdb > ${proteinId}.pdb \n`,
     3: `gmx pdb2gmx -f ${proteinId}.pdb -o ${proteinId}.gro -water ${waterModel} -ff ${forceField}`,
     4: `gmx editconf -f ${proteinId}.gro -o ${proteinId}_box.gro -c -d ${boxDistance} -bt ${boxType} \ngmx solvate -cp ${proteinId}_inBox.gro -o ${proteinId}_inSolution.gro -p topol.top -cs ${waterModel}.gro`,
     5: `gmx grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\ngmx genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon} ${(ionConcentration != 0 && ionConcentration != "[ION_CONCENTRATION]") ? `-conc ${ionConcentration}` : "-neutral"}`,
