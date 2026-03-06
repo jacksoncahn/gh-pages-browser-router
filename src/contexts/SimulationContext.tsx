@@ -20,6 +20,7 @@ interface SimulationContextType {
   currentSimulation: Partial<Simulation> | null;
   updateSimulationName: (name: string) => void;
   updateProteinId: (proteinId: string) => void;
+  updateCleanProtein: (cleanProtein: boolean) => void;
   updateForceField: (forceField: ForceField) => void;
   updateWaterModel: (waterModel: WaterModel) => void;
   updateBoxDistance: (distance: number) => void;
@@ -112,6 +113,10 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     updateSimulationParams({ proteinId });
   };
 
+  const updateCleanProtein = (cleanProtein: boolean) => {
+    updateSimulationParams({ cleanProtein } as any);
+  }
+
   const updateForceField = (forceField: ForceField) => {
     updateSimulationParams({ forceField });
   };
@@ -187,6 +192,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
         currentSimulation,
         updateSimulationName,
         updateProteinId,
+        updateCleanProtein,
         updateForceField,
         updateWaterModel,
         updateBoxDistance,

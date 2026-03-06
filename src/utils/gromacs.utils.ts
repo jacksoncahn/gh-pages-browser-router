@@ -13,6 +13,7 @@ export function generateStepCommand(
   params?: SimulationParams
 ): string {
   const proteinId = params?.proteinId || "[PDB_ID]";
+  const cleanProtein = params?.cleanProtein
   const forceField = params?.forceField || "[FORCE_FIELD]";
   const waterModel = params?.waterModel || "[WATER_MODEL]";
   const boxType = params?.boxType || "[BOX_TYPE]";
@@ -23,13 +24,13 @@ export function generateStepCommand(
   const verification = params?.verificationParams
 
   const commands: { [key: number]: string } = {
-    2: `wget https://files.rcsb.org/download/${proteinId}.pdb \ngrep -v HOH ${proteinId}.pdb > ${proteinId}.pdb \n`,
-    3: `gmx pdb2gmx -f ${proteinId}.pdb -o ${proteinId}.gro -water ${waterModel} -ff ${forceField}`,
-    4: `gmx editconf -f ${proteinId}.gro -o ${proteinId}_box.gro -c -d ${boxDistance} -bt ${boxType} \ngmx solvate -cp ${proteinId}_inBox.gro -o ${proteinId}_inSolution.gro -p topol.top -cs ${waterModel}.gro`,
+    2: `wget https://files.rcsb.org/download/${proteinId}.pdb \n${cleanProtein ? `grep -v HOH ${proteinId}.pdb > ${proteinId}_clean.pdb\n` : ''}`,
+    3: `gmx pdb2gmx -f ${cleanProtein ? `${proteinId}_clean.pdb`: `${proteinId}.pdb`} -o ${proteinId}.gro -water ${waterModel} -ff ${forceField}`,
+    4: `gmx editconf -f ${proteinId}.gro -o ${proteinId}_box.gro -c -d ${boxDistance} -bt ${boxType} \ngmx solvate -cp ${proteinId}_box.gro -o ${proteinId}_inSolution.gro -p topol.top -cs ${waterModel}.gro`,
     5: `gmx grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\ngmx genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon} ${(ionConcentration != 0 && ionConcentration != "[ION_CONCENTRATION]") ? `-conc ${ionConcentration}` : "-neutral"}`,
-    6: `gmx grompp -f minim.mdp -c ${proteinId}_ions.gro -p topol.top -o ${proteinId}_em.tpr\ngmx mdrun -v -deffnm ${proteinId}_em\ngmx energy -f ${proteinId}_em.edr -o ${proteinId}.potential.xvg`,
+    6: `gmx grompp -f minim.mdp -c ${proteinId}_ions.gro -p topol.top -o ${proteinId}_em.tpr\ngmx mdrun -deffnm ${proteinId}_em\ngmx energy -f ${proteinId}_em.edr -o ${proteinId}.potential.xvg`,
     7: `gmx grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr\ngmx mdrun -deffnm ${proteinId}_nvt -nb gpu`,
-    8: `${verification?.temperature ? `gmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""} gmx mdrun -deffnm ${proteinId}_npt -nb gpu ${verification?.pressure ? `\ngmx grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\ngmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg`: ""} ${verification?.system_volume ? `\ngmx energy -f ${proteinId}_npt.edr -o ${proteinId}volume.xvg` : ""}`,
+    8: `gmx mdrun -deffnm ${proteinId}_npt -nb gpu${verification?.temperature ? `\ngmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg` : ""}${verification?.pressure ? `\ngmx grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\ngmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg`: ""} ${verification?.system_volume ? `\ngmx energy -f ${proteinId}_npt.edr -o ${proteinId}volume.xvg` : ""}`,
     9: `gmx grompp -f md.mdp -c ${proteinId}_npt.gro -t ${proteinId}_npt.cpt -p topol.top -o ${proteinId}_md.tpr\ngmx mdrun -deffnm ${proteinId}_md -nb gpu`,
   };
 

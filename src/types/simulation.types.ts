@@ -12,6 +12,7 @@ export type Simulation = {
 export type SimulationParams = {
   //TODO: flesh this out with actual simulation type once that is firmed up
   proteinId: string
+  cleanProtein: boolean
   forceField: ForceField
   waterModel: WaterModel
   boxType: BoxType

@@ -11,7 +11,11 @@ import {
   generateStepCommand,
   generateCompleteBashScript,
 } from "@/utils/gromacs.utils";
-import { downloadTextFile, copyToClipboard, downloadPDBFile } from "@/utils/download.utils";
+import {
+  downloadTextFile,
+  copyToClipboard,
+  downloadPDBFile,
+} from "@/utils/download.utils";
 import {
   ForceFields,
   PositiveIonTypes,
@@ -25,6 +29,8 @@ import {
   type WaterModel,
   type BoxType,
 } from "@/types/simulation.types";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SimulationStep() {
   const { stepNumber } = useParams();
@@ -93,7 +99,7 @@ export default function SimulationStep() {
     if (!pdbId) return false;
     const pdbPattern = /^[0-9][A-Za-z0-9]{3}$/;
     return pdbPattern.test(pdbId.trim());
-  }
+  };
 
   // Check if current step has all required fields filled
   const isCurrentStepValid = (): boolean => {
@@ -112,7 +118,7 @@ export default function SimulationStep() {
         return (
           !!params?.positiveIon &&
           !!params?.negativeIon &&
-          !!(params as any)?.solventGroup 
+          !!(params as any)?.solventGroup
         );
       case 6:
       case 7:
@@ -175,9 +181,16 @@ export default function SimulationStep() {
               </Button>
               {params?.proteinId && !isValidPDBId(params.proteinId) && (
                 <p className="text-sm text-destructive">
-                  Invalid PDB ID format. Should be 4 characters (e.g., 1AKI, 108D).
+                  Invalid PDB ID format. Should be 4 characters (e.g., 1AKI,
+                  108D).
                 </p>
               )}
+              <FieldGroup className="mt-4">
+                <Field orientation="horizontal">
+                  <Checkbox id="clean-protein" name="clean-protein" onCheckedChange={simulation.updateCleanProtein} checked={!!params?.cleanProtein} />
+                  <FieldLabel htmlFor="clean-protein">Remove structural waters from protein</FieldLabel>
+                </Field>
+              </FieldGroup>
             </div>
             <CodeBlock
               code={generateStepCommand(
