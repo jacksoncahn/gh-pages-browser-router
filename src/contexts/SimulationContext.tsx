@@ -13,6 +13,7 @@ import type {
   BoxType,
   PositiveIonType,
   NegativeIonType,
+  EquilibrationOptions,
 } from "@/types/simulation.types";
 import { saveSimulation, generateSimulationId } from "@/utils/simulation.utils";
 
@@ -29,6 +30,7 @@ interface SimulationContextType {
   updateNegativeIon: (ion: NegativeIonType) => void;
   updateSolventGroup: (group: string) => void;
   updateIonConcentration: (concentration: number) => void;
+  updateEquilibriation: (equilibriation: EquilibrationOptions) => void;
   updateVerification: (
     field: "temperature" | "pressure" | "system_volume",
     value: boolean,
@@ -149,6 +151,10 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     updateSimulationParams({ ion_concentration: concentration } as any);
   };
 
+  const updateEquilibriation = (equilibriation: "none" | "nvt" | "npt" | "both") => {
+    updateSimulationParams({ equilibriationOptions: equilibriation } as any);
+  }
+
   const updateVerification = (
     field: "temperature" | "pressure" | "system_volume",
     value: boolean,
@@ -201,6 +207,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
         updateNegativeIon,
         updateSolventGroup,
         updateIonConcentration,
+        updateEquilibriation,
         updateVerification,
         completeSimulation,
         resetSimulation,

@@ -21,7 +21,8 @@ export type SimulationParams = {
   negativeIon: NegativeIonType
   ion_concentration: number
   minimizationParams: MinimizationParams
-  equilibriationParams: EquilibrationParams
+  equilibriationOptions: EquilibrationOptions
+  equilibriationParams?: EquilibrationParams
   verificationParams: VerificationParams
 }
 
@@ -318,6 +319,8 @@ export const PCoupl = z.union([
 ])
 
 export type PCoupl = z.infer<typeof PCoupl>
+
+export type EquilibrationOptions = "none" | "nvt" | "npt" | "both"
 
 export type EquilibrationParams = {
   //TODO: need all parameter options for equilibration

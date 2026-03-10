@@ -13,6 +13,7 @@ interface ControlledComboboxProps {
   value?: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  horizontal?: boolean;
 }
 
 /**
@@ -25,9 +26,10 @@ export function ControlledCombobox({
   value,
   onChange,
   placeholder,
+  horizontal = false,
 }: ControlledComboboxProps) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className={`flex ${horizontal ? "flex-row items-center" : "flex-col"} gap-2`}>
       <label className="text-sm font-medium">{label}</label>
       <Combobox
         items={items}

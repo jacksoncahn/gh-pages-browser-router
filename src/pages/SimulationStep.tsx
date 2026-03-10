@@ -187,8 +187,15 @@ export default function SimulationStep() {
               )}
               <FieldGroup className="mt-4">
                 <Field orientation="horizontal">
-                  <Checkbox id="clean-protein" name="clean-protein" onCheckedChange={simulation.updateCleanProtein} checked={!!params?.cleanProtein} />
-                  <FieldLabel htmlFor="clean-protein">Remove structural waters from protein</FieldLabel>
+                  <Checkbox
+                    id="clean-protein"
+                    name="clean-protein"
+                    onCheckedChange={simulation.updateCleanProtein}
+                    checked={!!params?.cleanProtein}
+                  />
+                  <FieldLabel htmlFor="clean-protein">
+                    Remove structural waters from protein
+                  </FieldLabel>
                 </Field>
               </FieldGroup>
             </div>
@@ -362,7 +369,21 @@ export default function SimulationStep() {
         return (
           <div className="gap-4 flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-2">Equilibriate the system</h2>
-            <p>NVT equilibration will be performed to stabilize temperature.</p>
+            <p>Choose what type of equilibration you would like to use</p>
+            <ControlledCombobox
+              label="Equilibration Type"
+              items={["None", "NPT", "NVT", "Both"]}
+              value={(params as any)?.equilibriationOptions}
+              onChange={(value) => simulation.updateEquilibriation(value.toLowerCase() as any)}
+              horizontal
+            />
+
+            {(simulation.currentSimulation?.simulation_params?.equilibriationOptions === "nvt" || simulation.currentSimulation?.simulation_params?.equilibriationOptions === "npt" || simulation.currentSimulation?.simulation_params?.equilibriationOptions === "both") && (
+              <p className="text-sm text-muted-foreground mt-2">
+                For NVT and/or NPT equilibriation, you must have the respective <code>nvt.mdp</code> and/or <code>npt.mdp</code> files in your project directory with the appropriate parameters set. The generated script will use those files for equilibration.
+              </p>
+            )}
+
             <CodeBlock
               code={generateStepCommand(
                 currentStep,
