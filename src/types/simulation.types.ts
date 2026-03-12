@@ -116,8 +116,20 @@ export const ForceFieldToWaterModelMap: Record<ForceField, WaterModel[]> = {
   [ForceFields.GROMOS53A5]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E],
   [ForceFields.GROMOS53A6]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E],
   [ForceFields.GROMOS54A7]: [WaterModels.None, WaterModels.SPC, WaterModels.SPC_E],
-  [ForceFields.OPLS_AA_L]: [WaterModels.None, WaterModels.TIP4P, WaterModels.TIP4P_EW, WaterModels.TIP3P,  WaterModels.TIP5P, WaterModels.TIP5_PE, WaterModels.SPC, WaterModels.SPC_E],
-} 
+  [ForceFields.OPLS_AA_L]: [WaterModels.None, WaterModels.TIP4P, WaterModels.TIP4P_EW, WaterModels.TIP3P, WaterModels.TIP5P, WaterModels.TIP5_PE, WaterModels.SPC, WaterModels.SPC_E],
+}
+
+export const WaterModelCoordinateTemplates = {
+  [WaterModels.TIP3P]: "spc216.gro",
+  [WaterModels.TIPS3P]: "spc216.gro",
+  [WaterModels.SPC]: "spc216.gro",
+  [WaterModels.SPC_E]: "spc216.gro",
+  [WaterModels.SPC216]: "spc216.gro",
+  [WaterModels.TIP4P]: "tip4p.gro",
+  [WaterModels.TIP4P_EW]: "tip4p.gro",
+  [WaterModels.TIP5P]: "tip5p.gro",
+  [WaterModels.TIP5_PE]: "tip5p.gro",
+}
 
 /* BOX TYPES */
 export const BoxTypes = {
