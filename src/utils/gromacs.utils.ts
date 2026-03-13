@@ -5,9 +5,9 @@ import { WaterModelCoordinateTemplates, type Simulation, type SimulationParams }
  */
 const ENERGY_ECHO_VALUES = {
   potential: "potential 0",
-  temperature: "vir-yy 0",
-  pressure: "vir-zx 0",
-  density: "pres-yx 0",
+  temperature: "temperature 0",
+  pressure: "pressure 0",
+  density: "density 0",
   system_volume: "volume 0",
 } as const;
 
