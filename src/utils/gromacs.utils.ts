@@ -45,7 +45,7 @@ export function generateStepCommand(
       `echo "${ENERGY_ECHO_VALUES.potential}" | gmx energy -f ${proteinId}_em.edr -o ${proteinId}_potential.xvg` :
       `gmx energy -f ${proteinId}_em.edr -o ${proteinId}_potential.xvg`}`,
     7: `${(equilibriation === "nvt" || equilibriation === "both") ? `gmx grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr\ngmx mdrun -deffnm ${proteinId}_nvt -nb gpu\n` : ""}${(equilibriation === "npt" || equilibriation === "both") ? `gmx grompp -f npt.mdb -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\ngmx mdrun -deffnm ${proteinId}_npt -nb gpu` : ""}`,
-    8: `${inBashScript ? `${verification?.temperature ? `\necho "${ENERGY_ECHO_VALUES.temperature}" | gmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg` : ""}${verification?.pressure ? `\necho "${ENERGY_ECHO_VALUES.pressure}" | gmx grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\ngmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg` : ""}${verification?.system_volume ? `\necho "${ENERGY_ECHO_VALUES.system_volume}" | gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg` : ""}` : `${verification?.temperature ? `\ngmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg` : ""}${verification?.pressure ? `\ngmx grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\ngmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg` : ""}${verification?.system_volume ? `\ngmx energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg` : ""}`}`,
+    8: `${inBashScript ? `${verification?.temperature ? `echo "${ENERGY_ECHO_VALUES.temperature}" | gmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""}${verification?.pressure ? `echo "${ENERGY_ECHO_VALUES.pressure}" | gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\n` : ""}${verification?.system_volume ? `echo "${ENERGY_ECHO_VALUES.system_volume}" | gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg\n` : ""}` : `${verification?.temperature ? `gmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""}${verification?.pressure ? `gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\n` : ""}${verification?.system_volume ? `gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg\n` : ""}`}`,
     9: `gmx grompp -f md.mdp -c ${proteinId}_npt.gro -t ${proteinId}_npt.cpt -p topol.top -o ${proteinId}_md.tpr\ngmx mdrun -deffnm ${proteinId}_md -nb gpu`,
   };
 
@@ -127,7 +127,7 @@ echo "Step 6: Running requested equilibration..."
 ${generateStepCommand(7, params, true)}
 
 # ===== STEP 7: Validation =====
-echo "Step 7: Running NPT equilibration and validation..."
+echo "Step 7: Running validation..."
 ${generateStepCommand(8, params, true)}
 
 # ===== STEP 8: Production MD =====

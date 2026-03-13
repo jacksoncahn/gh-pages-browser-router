@@ -142,6 +142,12 @@ export default function SimulationDetail() {
                 {(params as any)?.solventGroup || "N/A"}
               </p>
             </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Equilibriation</p>
+              <p className="font-medium">
+                {(params as any)?.equilibriationOptions || "none"}
+              </p>
+            </div>
             {params?.verificationParams && (
               <div className="col-span-2">
                 <p className="text-sm text-muted-foreground mb-2">
