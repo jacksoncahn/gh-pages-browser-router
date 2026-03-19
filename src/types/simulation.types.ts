@@ -12,6 +12,7 @@ export type Simulation = {
 export type SimulationParams = {
   //TODO: flesh this out with actual simulation type once that is firmed up
   proteinId: string
+  proteinMetadata?: ProteinMetadata
   cleanProtein: boolean
   forceField: ForceField
   waterModel: WaterModel
@@ -27,6 +28,19 @@ export type SimulationParams = {
 }
 
 /* SIMULATION COMPONENTS */
+
+/* PROTEIN METADATA */
+export type ProteinMetadata = {
+  entryId: string
+  deposited_atom_count: number | null
+  experimental_method: string | null
+  molecular_weight: number | null
+  pdbx_database_id_DOI: string | null
+  title: string | null
+  pdbx_keywords: string[] 
+  initial_release_date: string | null
+  revision_date: string | null
+}
 
 /* FORCE FIELDS */
 export const ForceFields = {

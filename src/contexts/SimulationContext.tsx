@@ -14,6 +14,7 @@ import type {
   PositiveIonType,
   NegativeIonType,
   EquilibrationOptions,
+  ProteinMetadata,
 } from "@/types/simulation.types";
 import { saveSimulation, generateSimulationId } from "@/utils/simulation.utils";
 
@@ -22,6 +23,7 @@ interface SimulationContextType {
   updateSimulationName: (name: string) => void;
   updateProteinId: (proteinId: string) => void;
   updateCleanProtein: (cleanProtein: boolean) => void;
+  updateProteinMetadata: (metadata: ProteinMetadata | null) => void;
   updateForceField: (forceField: ForceField) => void;
   updateWaterModel: (waterModel: WaterModel) => void;
   updateBoxDistance: (distance: number) => void;
@@ -93,7 +95,6 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
       ...updates,
       updated_at: new Date().toISOString(),
     }));
-    console.log("Updated simulation:", { ...currentSimulation, ...updates });
   };
 
   const updateSimulationParams = (paramUpdates: Partial<SimulationParams>) => {
@@ -117,6 +118,10 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
 
   const updateCleanProtein = (cleanProtein: boolean) => {
     updateSimulationParams({ cleanProtein } as any);
+  }
+
+  const updateProteinMetadata = (metadata: ProteinMetadata | null) => {
+    updateSimulationParams({ proteinMetadata: metadata} as any);
   }
 
   const updateForceField = (forceField: ForceField) => {
@@ -199,6 +204,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
         updateSimulationName,
         updateProteinId,
         updateCleanProtein,
+        updateProteinMetadata,
         updateForceField,
         updateWaterModel,
         updateBoxDistance,

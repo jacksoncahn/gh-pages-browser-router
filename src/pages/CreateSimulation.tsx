@@ -19,11 +19,11 @@ export default function CreateSimulation() {
 
   return (
     <SimulationProvider>
-      <main className="h-screen flex flex-col max-h-100%">
+      <main className="h-dvh flex flex-col overflow-hidden">
         <NavBar />
         <CreationStepProgress step={currentStep} totalSteps={totalSteps} />
-        <div className="flex-1 flex items-center justify-center overflow-auto">
-          <div className="w-full max-w-4xl h-full flex items-center justify-center">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="w-full max-w-4xl h-full min-h-0 mx-auto">
             <Outlet />
           </div>
         </div>

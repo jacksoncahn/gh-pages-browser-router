@@ -31,6 +31,7 @@ import {
 } from "@/types/simulation.types";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
+import { fetchPDBMetadata } from "@/services/rscb";
 
 export default function SimulationStep() {
   const { stepNumber } = useParams();
@@ -39,6 +40,41 @@ export default function SimulationStep() {
   const totalSteps = 9;
   const simulation = useSimulation();
   const [copied, setCopied] = useState(false);
+
+  const [lookupStatus, setLookupStatus] = useState<
+    "idle" | "loading" | "success" | "not_found" | "error"
+  >("idle");
+  const [lookupError, setLookupError] = useState<string | null>(null);
+
+  const handlePDBLookup = async () => {
+    const params = simulation.currentSimulation?.simulation_params;
+    const proteinId = (params?.proteinId || "").trim().toUpperCase();
+    if (!isValidPDBId(proteinId)) {
+      setLookupError(
+        "Invalid PDB ID format. Should be 4 characters (e.g., 1AKI, 108D).",
+      );
+      setLookupStatus("error");
+      return;
+    }
+
+    setLookupStatus("loading");
+    setLookupError(null);
+
+    const result = await fetchPDBMetadata(proteinId);
+
+    if (result.status === "success" && result.data) {
+      simulation.updateProteinMetadata(result.data);
+      setLookupStatus("success");
+    } else if (result.status === "not_found") {
+      simulation.updateProteinMetadata(null);
+      setLookupError(`No metadata found for PDB ID ${proteinId}`);
+      setLookupStatus("not_found");
+    } else if (result.status === "error") {
+      simulation.updateProteinMetadata(null);
+      setLookupError(result.message);
+      setLookupStatus("error");
+    }
+  };
 
   // bash script handlers
   const handleCopyBashScript = async () => {
@@ -109,7 +145,7 @@ export default function SimulationStep() {
       case 1:
         return !!simulation.currentSimulation?.simName?.trim();
       case 2:
-        return !!params?.proteinId?.trim();
+        return !!params?.proteinId?.trim() && !!params?.proteinMetadata;
       case 3:
         return !!params?.forceField && !!params?.waterModel;
       case 4:
@@ -162,30 +198,101 @@ export default function SimulationStep() {
             </h2>
             <p>Enter the PDB ID of the protein you want to simulate.</p>
             <div className="flex flex-col gap-2 w-full max-w-md">
-              <Input
-                placeholder="e.g. 1AKI"
-                className="mt-2"
-                value={params?.proteinId || ""}
-                onChange={(e) =>
-                  simulation.updateProteinId(e.target.value.toUpperCase())
-                }
-              />
+              <Field orientation="horizontal">
+                <Input
+                  placeholder="e.g. 1AKI"
+                  className="mt-2"
+                  value={params?.proteinId || ""}
+                  onChange={(e) => {
+                    simulation.updateProteinId(e.target.value.toUpperCase());
+                    if (lookupStatus === "success") {
+                      setLookupStatus("idle");
+                      setLookupError(null);
+                      simulation.updateProteinMetadata(null);
+                    }
+                  }}
+                />
+                <Button onClick={handlePDBLookup}>
+                  {lookupStatus == "loading" ? "Loading..." : "Search"}
+                </Button>
+              </Field>
+
+              {lookupStatus === "success" && params?.proteinMetadata && (
+                <div className="flex flex-col rounded-md p-4 items-center gap-2 bg-card mt-4">
+                  <p>
+                    <strong>Atom Count:</strong>{" "}
+                    {params.proteinMetadata.deposited_atom_count ?? "—"}
+                  </p>
+
+                  <p>
+                    <strong>Total Structure Weight: </strong>
+                    {params.proteinMetadata.molecular_weight != null
+                      ? `${params.proteinMetadata.molecular_weight} kDa`
+                      : "—"}
+                  </p>
+                  <p>
+                    <strong>Experimental Method: </strong>
+                    {params.proteinMetadata.experimental_method ?? "—"}
+                  </p>
+                  <span className="flex items-center align-center gap-1">
+                    <strong>DOI: </strong>
+                    {params.proteinMetadata.pdbx_database_id_DOI ? (
+                      <a
+                        href={`https://doi.org/${params.proteinMetadata.pdbx_database_id_DOI}`}
+                        className="text-link underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {params.proteinMetadata.pdbx_database_id_DOI}
+                      </a>
+                    ) : (
+                      <p>-</p>
+                    )}
+                  </span>
+                  <p>
+                    <strong>Release Date: </strong>
+                    {params.proteinMetadata.initial_release_date
+                      ? new Date(
+                          params.proteinMetadata.initial_release_date,
+                        ).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : "—"}
+                  </p>
+                  <p>
+                    <strong>Keywords: </strong>
+                    {params.proteinMetadata.pdbx_keywords ?? "No keywords"}
+                  </p>
+                </div>
+              )}
+
+              {lookupStatus === "error" && (
+                <p className="text-sm text-destructive">
+                  {lookupError || "Failed to fetch protein metadata."}
+                </p>
+              )}
+
+              {lookupStatus === "not_found" && (
+                <p className="text-sm text-destructive">
+                  {lookupError || "PDB ID not found."}
+                </p>
+              )}
+
               <Button
-                variant="outline"
+                variant={lookupStatus === "success" ? "default" : "outline"}
                 onClick={() => downloadPDBFile(params?.proteinId || "")}
-                disabled={!isValidPDBId(params?.proteinId || "")}
-                className="w-full"
+                disabled={
+                  !isValidPDBId(params?.proteinId || "") ||
+                  lookupStatus !== "success"
+                }
+                className="w-full mt-2"
               >
                 <Download className="mr-2 h-4 w-4" />
                 Download {params?.proteinId?.toUpperCase() || "PDB"} File
               </Button>
-              {params?.proteinId && !isValidPDBId(params.proteinId) && (
-                <p className="text-sm text-destructive">
-                  Invalid PDB ID format. Should be 4 characters (e.g., 1AKI,
-                  108D).
-                </p>
-              )}
-              <FieldGroup className="mt-4">
+              <FieldGroup className="mt-2">
                 <Field orientation="horizontal">
                   <Checkbox
                     id="clean-protein"
@@ -374,13 +481,23 @@ export default function SimulationStep() {
               label="Equilibration Type"
               items={["None", "NPT", "NVT", "Both"]}
               value={(params as any)?.equilibriationOptions}
-              onChange={(value) => simulation.updateEquilibriation(value.toLowerCase() as any)}
+              onChange={(value) =>
+                simulation.updateEquilibriation(value.toLowerCase() as any)
+              }
               horizontal
             />
 
-            {(simulation.currentSimulation?.simulation_params?.equilibriationOptions === "nvt" || simulation.currentSimulation?.simulation_params?.equilibriationOptions === "npt" || simulation.currentSimulation?.simulation_params?.equilibriationOptions === "both") && (
+            {(simulation.currentSimulation?.simulation_params
+              ?.equilibriationOptions === "nvt" ||
+              simulation.currentSimulation?.simulation_params
+                ?.equilibriationOptions === "npt" ||
+              simulation.currentSimulation?.simulation_params
+                ?.equilibriationOptions === "both") && (
               <p className="text-sm text-muted-foreground mt-2">
-                For NVT and/or NPT equilibriation, you must have the respective <code>nvt.mdp</code> and/or <code>npt.mdp</code> files in your project directory with the appropriate parameters set. The generated script will use those files for equilibration.
+                For NVT and/or NPT equilibriation, you must have the respective{" "}
+                <code>nvt.mdp</code> and/or <code>npt.mdp</code> files in your
+                project directory with the appropriate parameters set. The
+                generated script will use those files for equilibration.
               </p>
             )}
 
@@ -482,12 +599,12 @@ export default function SimulationStep() {
   };
 
   return (
-    <div className="flex flex-col p-6 px-[10%] w-full h-full max-h-screen">
-      <div className="flex-1 flex items-center justify-center w-full">
+    <div className="flex flex-col p-4 md:p-6 px-[6%] md:px-[10%] w-full h-full min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden">
         <div className="w-full">{renderStepContent()}</div>
       </div>
 
-      <div className="flex justify-between border-t pt-4 mt-6 w-full">
+      <div className="shrink-0 flex justify-between border-t pt-4 w-full">
         <Button
           variant="outline"
           onClick={handlePrevious}
