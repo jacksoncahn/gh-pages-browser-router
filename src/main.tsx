@@ -10,7 +10,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Home from "./pages/Home.tsx";
 import SimulationDetail from "./pages/SimulationDetail.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import SimulationStep from "./pages/SimulationStep.tsx";
+import SimulationStep from "./pages/SimulationStep/SimulationStep.tsx";
 
 const router = createBrowserRouter(
   [

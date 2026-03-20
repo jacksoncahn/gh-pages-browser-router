@@ -2,6 +2,8 @@ import type { Simulation } from "@/types/simulation.types";
 
 const SIMULATIONS_KEY = 'gromacs-simulations';
 
+// STORAGE UTILITIES
+
 export const getAllSimulations = (): Simulation[] => {
     try {
         const stored = localStorage.getItem(SIMULATIONS_KEY);
@@ -48,4 +50,84 @@ export const generateSimulationId = (): number => {
     const simulations = getAllSimulations();
     if (simulations.length === 0) return 1;
     return Math.max(...simulations.map(sim => sim.id)) + 1;
+};
+
+// VALIDATION UTILITIES
+
+/**
+ * Validation rules for each step
+ * Returns true if the step has all required fields filled
+ */
+export const validateStep = (
+    step: number,
+    simulation: Simulation | null
+): boolean => {
+    if (!simulation) return false;
+
+    const params = simulation.simulation_params;
+
+    const validationRules: Record<number, () => boolean> = {
+        1: () => Boolean(simulation.simName && simulation.simName.trim().length > 0),
+        2: () => !!params?.proteinId?.trim() && !!params?.proteinMetadata,
+        3: () => !!params?.forceField && !!params?.waterModel,
+        4: () => !!(params as any)?.boxDistance && !!params?.boxType,
+        5: () =>
+            !!params?.positiveIon &&
+            !!params?.negativeIon &&
+            !!(params as any)?.solventGroup,
+        6: () => true,
+        7: () => !!params?.equilibriationOptions,
+        8: () => true,
+        9: () => true,
+    };
+
+    return validationRules[step]?.() ?? false;
+};
+
+/**
+ * Validate PDB ID format
+ * Format: 4 characters, first is digit, rest are alphanumeric
+ */
+export const isValidPDBId = (pdbId: string): boolean => {
+    if (!pdbId) return false;
+    const pdbPattern = /^[0-9][A-Za-z0-9]{3}$/;
+    return pdbPattern.test(pdbId.trim());
+};
+
+// PDB LOOKUP UTILITIES
+
+/**
+ * Handle PDB lookup logic - fetches metadata and updates simulation state
+ * Returns object with status and error for state management in hooks
+ */
+export const handlePDBLookupLogic = async (
+    proteinId: string,
+    simulation: any
+): Promise<{ status: "success" | "not_found" | "error"; error: string | null }> => {
+    try {
+        const { fetchPDBMetadata } = await import("@/services/rscb");
+        const result = await fetchPDBMetadata(proteinId);
+
+        if (result.status === "success" && result.data) {
+            simulation.updateProteinMetadata(result.data);
+            return { status: "success", error: null };
+        } else if (result.status === "not_found") {
+            simulation.updateProteinMetadata(null);
+            return {
+                status: "not_found",
+                error: `No metadata found for PDB ID ${proteinId}`,
+            };
+        } else if (result.status === "error") {
+            simulation.updateProteinMetadata(null);
+            return { status: "error", error: result.message };
+        }
+    } catch (error) {
+        simulation.updateProteinMetadata(null);
+        return {
+            status: "error",
+            error: error instanceof Error ? error.message : "An unknown error occurred",
+        };
+    }
+
+    return { status: "error", error: "Unknown error occurred" };
 };
