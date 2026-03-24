@@ -7,6 +7,7 @@ import {
   NegativeIonTypes,
   type PositiveIonType,
   type NegativeIonType,
+  SolventGroups,
 } from "@/types/simulation.types";
 import { generateStepCommand } from "@/utils/gromacs.utils";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
@@ -50,8 +51,7 @@ export default function StepFive() {
         <div className="flex flex-row w-full gap-4">
           <ControlledCombobox
             label="Solvent Group"
-            // TODO: replace this with actual supported solvent groups once we have them defined
-            items={["SOL", "WAT", "HOH"]}
+            items={Object.values(SolventGroups)}
             value={(params as any)?.solventGroup}
             onChange={(value) => simulation.updateSolventGroup(value)}
           />

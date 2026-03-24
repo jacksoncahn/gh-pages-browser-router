@@ -20,6 +20,7 @@ export type SimulationParams = {
   boxDistance: number
   positiveIon: PositiveIonType
   negativeIon: NegativeIonType
+  solventGroup: SolventGroup
   ion_concentration: number
   minimizationParams: MinimizationParams
   equilibriationOptions: EquilibrationOptions
@@ -186,7 +187,17 @@ export const NegativeIonType = z.union([
 export type NegativeIonType = z.infer<typeof NegativeIonType>
 
 /* SOLVENT GROUPS */
-//TODO: add supported solvent groups slash check on if these are consistent across the board
+export const SolventGroups = {
+  SOL: "SOL",
+  HOH: "HOH",
+} as const
+
+export const SolventGroup = z.union([
+  z.literal(SolventGroups.SOL),
+  z.literal(SolventGroups.HOH)
+])
+
+export type SolventGroup = z.infer<typeof SolventGroup>
 
 /* MINIMIZATION */
 // TODO: need all parameter options for minimization

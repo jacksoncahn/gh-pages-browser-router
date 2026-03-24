@@ -3,12 +3,14 @@ import { WaterModelCoordinateTemplates, type Simulation, type SimulationParams }
 /**
  * Echo values for different gmx energy command outputs.
  */
-const ENERGY_ECHO_VALUES = {
+const ECHO_VALUES = {
   potential: "potential 0",
   temperature: "temperature 0",
   pressure: "pressure 0",
   density: "density 0",
   system_volume: "volume 0",
+  solvent_HOH: "Water 0",
+  solvent_SOL: "SOL 0",
 } as const;
 
 /**
@@ -32,6 +34,7 @@ export function generateStepCommand(
   const boxDistance = (params as any)?.boxDistance || "[DISTANCE]";
   const positiveIon = params?.positiveIon || "[POSITIVE_ION]";
   const negativeIon = params?.negativeIon || "[NEGATIVE_ION]";
+  const solventGroup = params?.solventGroup || "[SOLVENT_GROUP]";
   const ionConcentration = params?.ion_concentration || "[ION_CONCENTRATION]";
   const equilibriation = (params as any)?.equilibriationOptions || "none";
   const verification = params?.verificationParams
@@ -40,12 +43,12 @@ export function generateStepCommand(
     2: `wget https://files.rcsb.org/download/${proteinId}.pdb \n${cleanProtein ? `grep -v HOH ${proteinId}.pdb > ${proteinId}_clean.pdb\n` : ''}`,
     3: `gmx pdb2gmx -f ${cleanProtein ? `${proteinId}_clean.pdb` : `${proteinId}.pdb`} -o ${proteinId}.gro -water ${waterModel} -ff ${forceField}`,
     4: `gmx editconf -f ${proteinId}.gro -o ${proteinId}_box.gro -c -d ${boxDistance} -bt ${boxType} \ngmx solvate -cp ${proteinId}_box.gro -o ${proteinId}_inSolution.gro -p topol.top ${waterModel !== 'None' && waterModel !== '[WATER_MODEL]' ? `-cs ${WaterModelCoordinateTemplates[waterModel]}` : ""}`,
-    5: `gmx grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\n${inBashScript ? `echo "13" | gmx genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon} ${(ionConcentration != 0 && ionConcentration != "[ION_CONCENTRATION]") ? `-conc ${ionConcentration}` : "-neutral"}` : `gmx genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon} ${(ionConcentration != 0 && ionConcentration != "[ION_CONCENTRATION]") ? `-conc ${ionConcentration}` : "-neutral"}`}`,
+    5: `gmx grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\n${inBashScript ? `echo "${solventGroup === "HOH" ? ECHO_VALUES.solvent_HOH : ECHO_VALUES.solvent_SOL}" | gmx genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon} ${(ionConcentration != 0 && ionConcentration != "[ION_CONCENTRATION]") ? `-conc ${ionConcentration}` : "-neutral"}` : `gmx genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon} ${(ionConcentration != 0 && ionConcentration != "[ION_CONCENTRATION]") ? `-conc ${ionConcentration}` : "-neutral"}`}`,
     6: `gmx grompp -f minim.mdp -c ${proteinId}_ions.gro -p topol.top -o ${proteinId}_em.tpr\ngmx mdrun -deffnm ${proteinId}_em\n${inBashScript ?
-      `echo "${ENERGY_ECHO_VALUES.potential}" | gmx energy -f ${proteinId}_em.edr -o ${proteinId}_potential.xvg` :
+      `echo "${ECHO_VALUES.potential}" | gmx energy -f ${proteinId}_em.edr -o ${proteinId}_potential.xvg` :
       `gmx energy -f ${proteinId}_em.edr -o ${proteinId}_potential.xvg`}`,
     7: `${(equilibriation === "nvt" || equilibriation === "both") ? `gmx grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr\ngmx mdrun -deffnm ${proteinId}_nvt -nb gpu\n` : ""}${(equilibriation === "npt" || equilibriation === "both") ? `gmx grompp -f npt.mdb -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\ngmx mdrun -deffnm ${proteinId}_npt -nb gpu` : ""}`,
-    8: `${inBashScript ? `${verification?.temperature ? `echo "${ENERGY_ECHO_VALUES.temperature}" | gmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""}${verification?.pressure ? `echo "${ENERGY_ECHO_VALUES.pressure}" | gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\n` : ""}${verification?.system_volume ? `echo "${ENERGY_ECHO_VALUES.system_volume}" | gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg\n` : ""}` : `${verification?.temperature ? `gmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""}${verification?.pressure ? `gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\n` : ""}${verification?.system_volume ? `gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg\n` : ""}`}`,
+    8: `${inBashScript ? `${verification?.temperature ? `echo "${ECHO_VALUES.temperature}" | gmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""}${verification?.pressure ? `echo "${ECHO_VALUES.pressure}" | gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\n` : ""}${verification?.system_volume ? `echo "${ECHO_VALUES.system_volume}" | gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg\n` : ""}` : `${verification?.temperature ? `gmx energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""}${verification?.pressure ? `gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\n` : ""}${verification?.system_volume ? `gmx energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg\n` : ""}`}`,
     9: `gmx grompp -f md.mdp -c ${proteinId}_npt.gro -t ${proteinId}_npt.cpt -p topol.top -o ${proteinId}_md.tpr\ngmx mdrun -deffnm ${proteinId}_md -nb gpu`,
   };
 
@@ -98,7 +101,7 @@ export function generateCompleteBashScript(
 # Positive Ion: ${positiveIon}
 # Negative Ion: ${negativeIon}
 # Solvent Group: ${solventGroup}
-# Ion Concentration: ${ionConcentration} M
+# Ion Concentration: ${ionConcentration != "[ION_CONCENTRATION]" ? ionConcentration : 0} M
 
 echo "Starting GROMACS simulation: ${simName}"
 
