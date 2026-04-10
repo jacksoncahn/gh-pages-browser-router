@@ -80,6 +80,7 @@ export const validateStep = (
         7: () => !!params?.equilibriationOptions,
         8: () => true,
         9: () => true,
+        10: () => true,
     };
 
     return validationRules[step]?.() ?? false;

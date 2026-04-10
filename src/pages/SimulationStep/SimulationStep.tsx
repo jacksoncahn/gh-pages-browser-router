@@ -14,9 +14,10 @@ import StepSix from "./steps/StepSix";
 import StepSeven from "./steps/StepSeven";
 import StepEight from "./steps/StepEight";
 import StepNine from "./steps/StepNine";
+import StepTen from "./steps/StepTen";
 
 /**
- * Array of step components mapped by step number (1-9)
+ * Array of step components mapped by step number (0-10)
  */
 const STEP_COMPONENTS = [
   StepZero,
@@ -29,6 +30,7 @@ const STEP_COMPONENTS = [
   StepSeven,
   StepEight,
   StepNine,
+  StepTen,
 ];
 
 /**

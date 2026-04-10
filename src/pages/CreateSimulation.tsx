@@ -21,7 +21,7 @@ export default function CreateSimulation() {
     <SimulationProvider>
       <main className="h-dvh flex flex-col overflow-hidden">
         <NavBar />
-        <CreationStepProgress step={currentStep} totalSteps={TOTAL_STEPS} />
+        <CreationStepProgress step={currentStep} totalSteps={TOTAL_STEPS - 1} />
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="w-full max-w-4xl h-full min-h-0 mx-auto">
             <Outlet />

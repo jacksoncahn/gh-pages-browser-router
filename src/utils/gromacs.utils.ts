@@ -91,6 +91,7 @@ export function generateCompleteBashScript(
   return `#!/bin/bash
 # GROMACS Molecular Dynamics Simulation Script
 # Simulation Name: ${simName}
+# GROMACS Version: ${params?.gromacsVersion || "[GROMACS_VERSION]"}
 # Generated: ${dateString}
 
 # ===== CONFIGURATION =====

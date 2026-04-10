@@ -2,7 +2,7 @@
  * Constants for simulation steps configuration
  */
 
-export const TOTAL_STEPS = 10;
+export const TOTAL_STEPS = 11;
 
 export const STEP_CONFIG = {
   0: {
@@ -43,8 +43,13 @@ export const STEP_CONFIG = {
     description: "Select which properties to validate after equilibration.",
   },
   9: {
+    title: "Run production MD",
+    description:
+      "Run the production MD simulation with default parameters. Advanced users can run their own version of this step.",
+  },
+  10: {
     title: "Complete Your Simulation",
     description:
       "Review your simulation settings and download or copy the complete GROMACS bash script.",
-  },
+  }
 } as const;
