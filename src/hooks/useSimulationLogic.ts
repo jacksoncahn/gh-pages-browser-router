@@ -31,7 +31,7 @@ export const useSimulationLogic = (
    * Navigate to next step or complete simulation
    */
   const handleNext = () => {
-    if (currentStep < totalSteps) {
+    if (currentStep < totalSteps - 1) {
       navigate(`/simulation/new/${currentStep + 1}`);
     } else {
       // Save simulation and go to dashboard
@@ -44,7 +44,7 @@ export const useSimulationLogic = (
    * Navigate to previous step
    */
   const handlePrevious = () => {
-    if (currentStep > 1) {
+    if (currentStep > 0) {
       navigate(`/simulation/new/${currentStep - 1}`);
     }
   };

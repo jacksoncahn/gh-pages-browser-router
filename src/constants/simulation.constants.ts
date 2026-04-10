@@ -2,12 +2,16 @@
  * Constants for simulation steps configuration
  */
 
-export const TOTAL_STEPS = 9;
+export const TOTAL_STEPS = 10;
 
 export const STEP_CONFIG = {
-  1: {
+  0: {
     title: "What is the name of this simulation?",
     description: "Title it something meaningful so you can remember what it was.",
+  },
+  1: {
+    title: "What version of GROMACS would you like to use?",
+    description: "Select the GROMACS version for your simulation.",
   },
   2: {
     title: "Choose a protein for the simulation",

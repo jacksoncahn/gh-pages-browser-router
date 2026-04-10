@@ -4,6 +4,7 @@ import { useSimulationLogic } from "@/hooks/useSimulationLogic";
 import { TOTAL_STEPS } from "@/constants/simulation.constants";
 
 // Import all step components
+import StepZero from "./steps/StepZero";
 import StepOne from "./steps/StepOne";
 import StepTwo from "./steps/StepTwo";
 import StepThree from "./steps/StepThree";
@@ -18,6 +19,7 @@ import StepNine from "./steps/StepNine";
  * Array of step components mapped by step number (1-9)
  */
 const STEP_COMPONENTS = [
+  StepZero,
   StepOne,
   StepTwo,
   StepThree,
@@ -37,7 +39,7 @@ const STEP_COMPONENTS = [
 export default function SimulationStep() {
   const { stepNumber } = useParams();
   const navigate = useNavigate();
-  const currentStep = parseInt(stepNumber || "1");
+  const currentStep = parseInt(stepNumber || "0");
 
   // Use custom hook for step logic, validation, and navigation
   const { isCurrentStepValid, handleNext, handlePrevious } = useSimulationLogic(
@@ -47,7 +49,7 @@ export default function SimulationStep() {
   );
 
   // Get the appropriate step component
-  const StepComponent = STEP_COMPONENTS[currentStep - 1];
+  const StepComponent = STEP_COMPONENTS[currentStep];
 
   // Handle invalid step
   if (!StepComponent) {
@@ -68,12 +70,12 @@ export default function SimulationStep() {
         <Button
           variant="outline"
           onClick={handlePrevious}
-          disabled={currentStep === 1}
+          disabled={currentStep === 0}
         >
           Previous
         </Button>
         <Button onClick={handleNext} disabled={!isCurrentStepValid()}>
-          {currentStep === TOTAL_STEPS ? "Finish" : "Next"}
+          {currentStep === TOTAL_STEPS - 1 ? "Finish" : "Next"}
         </Button>
       </div>
     </div>

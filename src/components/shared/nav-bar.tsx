@@ -14,7 +14,7 @@ export function NavBar({ showButton = true } : { showButton?: boolean }) {
         {showButton && (
           <Button
           size="lg"
-          onClick={() => navigate("/simulation/new/1")}
+          onClick={() => navigate("/simulation/new/0")}
         >
           <Plus />
           new simulation

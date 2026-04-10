@@ -11,6 +11,7 @@ export type Simulation = {
 
 export type SimulationParams = {
   //TODO: flesh this out with actual simulation type once that is firmed up
+  gromacsVersion: GromacsVersion
   proteinId: string
   proteinMetadata?: ProteinMetadata
   cleanProtein: boolean
@@ -29,6 +30,14 @@ export type SimulationParams = {
 }
 
 /* SIMULATION COMPONENTS */
+
+/* GROMACS VERSIONS */
+export const GromacsVersions = {
+  gmx: "gmx",
+  gmx_mpi: "gmx_mpi",
+}
+
+export type GromacsVersion = typeof GromacsVersions[keyof typeof GromacsVersions]
 
 /* PROTEIN METADATA */
 export type ProteinMetadata = {

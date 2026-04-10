@@ -67,7 +67,8 @@ export const validateStep = (
     const params = simulation.simulation_params;
 
     const validationRules: Record<number, () => boolean> = {
-        1: () => Boolean(simulation.simName && simulation.simName.trim().length > 0),
+        0: () => Boolean(simulation.simName && simulation.simName.trim().length > 0),
+        1: () => !!params?.gromacsVersion,
         2: () => !!params?.proteinId?.trim() && !!params?.proteinMetadata,
         3: () => !!params?.forceField && !!params?.waterModel,
         4: () => !!(params as any)?.boxDistance && !!params?.boxType,

@@ -20,6 +20,7 @@ import { saveSimulation, generateSimulationId } from "@/utils/simulation.utils";
 
 interface SimulationContextType {
   currentSimulation: Partial<Simulation> | null;
+  updateGromacsVersion: (version: string) => void;
   updateSimulationName: (name: string) => void;
   updateProteinId: (proteinId: string) => void;
   updateCleanProtein: (cleanProtein: boolean) => void;
@@ -106,6 +107,10 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
       } as SimulationParams,
       updated_at: new Date().toISOString(),
     }));
+  };
+
+  const updateGromacsVersion = (version: string) => {
+    updateSimulationParams({ gromacsVersion: version } as any);
   };
 
   const updateSimulationName = (name: string) => {
@@ -201,6 +206,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     <SimulationContext.Provider
       value={{
         currentSimulation,
+        updateGromacsVersion,
         updateSimulationName,
         updateProteinId,
         updateCleanProtein,
