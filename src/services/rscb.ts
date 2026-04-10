@@ -27,6 +27,9 @@ type EntryQueryData = {
   struct_keywords: {
     pdbx_keywords?: string[] | null;
   } | null;
+  struct: {
+    title?: string | null;
+  } | null;
 }
 
 
@@ -48,7 +51,10 @@ const PBDID_METADATA_QUERY = `query GetPDBMetadata($pdbId: String!) {
     },
     struct_keywords {
       pdbx_keywords,
-    }
+    },
+    struct {
+      title
+    },
   }
 }`
 
@@ -83,11 +89,12 @@ export async function fetchPDBMetadata(pdbId: string, signal?: AbortSignal): Pro
 
     const metadata: ProteinMetadata = {
       entryId: pdbId.toUpperCase(),
+      title: entry.struct?.title ?? null,
       deposited_atom_count: entry.rcsb_entry_info?.deposited_atom_count ?? null,
       experimental_method: entry.rcsb_entry_info?.experimental_method ?? null,
       molecular_weight: entry.rcsb_entry_info?.molecular_weight ?? null,
       pdbx_database_id_DOI: entry.rcsb_primary_citation?.pdbx_database_id_DOI ?? null,
-      title: entry.rcsb_primary_citation?.title ?? null,
+      citation_title: entry.rcsb_primary_citation?.title ?? null,
       pdbx_keywords: entry.struct_keywords?.pdbx_keywords ?? [],
       initial_release_date: entry.rcsb_accession_info?.initial_release_date ?? null,
       revision_date: entry.rcsb_accession_info?.revision_date ?? null,

@@ -110,51 +110,55 @@ export default function StepTwo() {
 function PDBMetadataDisplay({ metadata }: any) {
   return (
     <div className="flex flex-col rounded-md p-4 items-center gap-2 bg-card mt-4">
-      <p>
-        <strong>Atom Count:</strong> {metadata.deposited_atom_count ?? "—"}
-      </p>
-      <p>
-        <strong>Total Structure Weight: </strong>
-        {metadata.molecular_weight != null
-          ? `${metadata.molecular_weight} kDa`
-          : "—"}
-      </p>
-      <p>
-        <strong>Experimental Method: </strong>
-        {metadata.experimental_method ?? "—"}
-      </p>
-      <span className="flex items-center align-center gap-1">
-        <strong>DOI: </strong>
-        {metadata.pdbx_database_id_DOI ? (
-          <a
-            href={`https://doi.org/${metadata.pdbx_database_id_DOI}`}
-            className="text-link underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {metadata.pdbx_database_id_DOI}
-          </a>
-        ) : (
-          <p>-</p>
-        )}
-      </span>
-      <p>
-        <strong>Release Date: </strong>
-        {metadata.initial_release_date
-          ? new Date(metadata.initial_release_date).toLocaleDateString(
-              "en-US",
-              {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              },
-            )
-          : "—"}
-      </p>
-      <p>
-        <strong>Keywords: </strong>
-        {metadata.pdbx_keywords ?? "No keywords"}
-      </p>
+      <p className="font-bold">{metadata.title}</p>
+
+      <div className="text-muted-foreground gap-1.5">
+        <p>
+          <strong>Atom Count:</strong> {metadata.deposited_atom_count ?? "—"}
+        </p>
+        <p>
+          <strong>Total Structure Weight: </strong>
+          {metadata.molecular_weight != null
+            ? `${metadata.molecular_weight} kDa`
+            : "—"}
+        </p>
+        <p>
+          <strong>Experimental Method: </strong>
+          {metadata.experimental_method ?? "—"}
+        </p>
+        <div className="flex items-center gap-1">
+          <strong>DOI: </strong>
+          {metadata.pdbx_database_id_DOI ? (
+            <a
+              href={`https://doi.org/${metadata.pdbx_database_id_DOI}`}
+              className="text-link underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {metadata.pdbx_database_id_DOI}
+            </a>
+          ) : (
+            <p>No DOI included</p>
+          )}
+        </div>
+        <p>
+          <strong>Release Date: </strong>
+          {metadata.initial_release_date
+            ? new Date(metadata.initial_release_date).toLocaleDateString(
+                "en-US",
+                {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                },
+              )
+            : "—"}
+        </p>
+        <p>
+          <strong>Keywords: </strong>
+          {metadata.pdbx_keywords ?? "No keywords"}
+        </p>
+      </div>
     </div>
   );
 }

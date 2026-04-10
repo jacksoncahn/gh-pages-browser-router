@@ -42,11 +42,12 @@ export type GromacsVersion = typeof GromacsVersions[keyof typeof GromacsVersions
 /* PROTEIN METADATA */
 export type ProteinMetadata = {
   entryId: string
+  title: string | null
   deposited_atom_count: number | null
   experimental_method: string | null
   molecular_weight: number | null
   pdbx_database_id_DOI: string | null
-  title: string | null
+  citation_title: string | null
   pdbx_keywords: string[] 
   initial_release_date: string | null
   revision_date: string | null
