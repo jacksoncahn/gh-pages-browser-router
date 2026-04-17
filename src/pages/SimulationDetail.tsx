@@ -8,6 +8,7 @@ import { getSimulationById } from "@/utils/simulation.utils";
 import { generateCompleteBashScript } from "@/utils/gromacs.utils";
 import { downloadTextFile, copyToClipboard } from "@/utils/download.utils";
 import type { Simulation } from "@/types/simulation.types";
+import { AppFooter } from "@/components/shared/app-footer";
 
 export default function SimulationDetail() {
   const { id } = useParams();
@@ -195,6 +196,7 @@ export default function SimulationDetail() {
           </div>
         </div>
       </div>
+      <AppFooter />
     </main>
   );
 }

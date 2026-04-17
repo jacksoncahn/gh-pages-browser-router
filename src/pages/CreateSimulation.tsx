@@ -6,6 +6,7 @@ import { SimulationProvider } from "@/contexts/SimulationContext";
 import { Button } from "@/components/ui/button";
 import { useSimulationLogic } from "@/hooks/useSimulationLogic";
 import { TOTAL_STEPS } from "@/constants/simulation.constants";
+import { AppFooter } from "@/components/shared/app-footer";
 
 function NavigationButtons() {
   const { stepNumber } = useParams();
@@ -19,7 +20,7 @@ function NavigationButtons() {
   );
 
   return (
-    <div className="shrink-0 border-t pt-4 px-4 pb-4 flex justify-between">
+    <div className="shrink-0 border-t border-b pt-4 px-4 pb-4 flex justify-between">
       <Button
         variant="outline"
         onClick={handlePrevious}
@@ -61,6 +62,7 @@ export default function CreateSimulation() {
         </div>
 
         <NavigationButtons />
+        <AppFooter />
       </main>
     </SimulationProvider>
   );

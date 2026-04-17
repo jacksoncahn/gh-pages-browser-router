@@ -1,4 +1,5 @@
 import { SimulationCard } from "@/components/dashboard/simulation-card";
+import { AppFooter } from "@/components/shared/app-footer";
 import { NavBar } from "@/components/shared/nav-bar";
 import type { Simulation } from "@/types/simulation.types";
 import { getAllSimulations } from "@/utils/simulation.utils";
@@ -13,9 +14,9 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <main className="py-4">
+    <main className="min-h-dvh flex flex-col py-4">
       <NavBar />
-      <div className="p-4 flex flex-col">
+      <div className="p-4 flex flex-1 flex-col">
         <h1 className="text-3xl font-bold mb-4 flex">My Simulations</h1>
         {simulations.length === 0 ? (
           <p className="text-muted-foreground">
@@ -38,6 +39,7 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+      <AppFooter />
     </main>
   );
 }
