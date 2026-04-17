@@ -11,6 +11,8 @@ import {
 } from "@/types/simulation.types";
 import { generateStepCommand } from "@/utils/gromacs.utils";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
 
 /**
  * Step Five: Ionization
@@ -22,11 +24,13 @@ export default function StepFive() {
   const params = simulation.currentSimulation?.simulation_params;
   const { title, description } = STEP_CONFIG[5];
 
+  const isNeutralizeChecked = !!params?.cleanProtein;
+
   return (
     <div className="gap-4 flex flex-col items-center">
       <h2 className="text-2xl font-bold mb-2">{title}</h2>
       <p>{description}</p>
-      <div className="flex flex-col gap-8 mt-4">
+      <div className="flex flex-col items-center gap-8 mt-4">
         {/* Ion Type Selection */}
         <div className="flex flex-row gap-4">
           <ControlledCombobox
@@ -48,7 +52,7 @@ export default function StepFive() {
         </div>
 
         {/* Solvent Group and Ion Concentration */}
-        <div className="flex flex-row w-full gap-4">
+        <div className="flex flex-row gap-4">
           <ControlledCombobox
             label="Solvent Group"
             items={Object.values(SolventGroups)}
@@ -62,7 +66,8 @@ export default function StepFive() {
               placeholder="e.g. 0.15"
               step="0.05"
               min="0"
-              value={(params as any)?.ion_concentration || ""}
+              disabled={isNeutralizeChecked}
+              value={(params as any)?.ion_concentration ?? ""}
               onChange={(e) =>
                 simulation.updateIonConcentration(
                   parseFloat(e.target.value) || 0,
@@ -71,7 +76,40 @@ export default function StepFive() {
             />
           </div>
         </div>
+
+        <FieldGroup className="mt-2">
+          <Field
+            orientation="horizontal"
+            className="w-fit mx-auto items-center gap-3"
+          >
+            <FieldLabel
+              htmlFor="neutralize-ions"
+              className="flex-none text-center leading-snug"
+            >
+              Add the amount of ions needed to neutralize the system
+            </FieldLabel>
+            <Checkbox
+              id="neutralize-ions"
+              name="neutralize-ions"
+              checked={isNeutralizeChecked}
+              onCheckedChange={(checked) => {
+                const isChecked = checked === true;
+                simulation.updateCleanProtein(isChecked);
+                if (isChecked) {
+                  simulation.updateIonConcentration(0);
+                }
+              }}
+            />
+          </Field>
+        </FieldGroup>
+
+        <p className="mx-auto max-w-2xl px-1 text-center text-sm text-muted-foreground leading-relaxed">
+          Note: Turning on neutralize automatically sets ion concentration to 0
+          and adds the required ions so the total net charge of the system is
+          zero.
+        </p>
       </div>
+
       <CodeBlock
         code={generateStepCommand(
           5,

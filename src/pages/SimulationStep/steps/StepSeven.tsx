@@ -28,6 +28,7 @@ export default function StepSeven() {
       <ControlledCombobox
         label="Equilibration Type"
         items={["None", "NPT", "NVT", "Both"]}
+        placeholder="eg. npt"
         value={equilibrationType}
         onChange={(value) =>
           simulation.updateEquilibriation(value.toLowerCase() as any)

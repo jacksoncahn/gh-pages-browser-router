@@ -15,6 +15,7 @@ export default function StepOne() {
       <p>{description}</p>
       <ControlledCombobox
         label="Gromacs Version"
+        placeholder="version"
         items={Object.values(GromacsVersions)}
         value={params?.gromacsVersion}
         onChange={(value) =>
