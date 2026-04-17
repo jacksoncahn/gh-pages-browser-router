@@ -11,7 +11,7 @@ export default function StepZero() {
       <h2 className="text-2xl font-bold mb-2">{title}</h2>
       <p>{description}</p>
       <Input
-        placeholder="eg. PHYS 3245 Midterm Simulation"
+        placeholder="eg. Adenylate Kinase in Water"
         className="mt-2"
         value={simulation.currentSimulation?.simName || ""}
         onChange={(e) => simulation.updateSimulationName(e.target.value)}
