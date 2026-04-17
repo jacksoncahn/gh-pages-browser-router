@@ -1,7 +1,4 @@
-import { useParams, useNavigate } from "react-router";
-import { Button } from "@/components/ui/button";
-import { useSimulationLogic } from "@/hooks/useSimulationLogic";
-import { TOTAL_STEPS } from "@/constants/simulation.constants";
+import { useParams } from "react-router";
 
 // Import all step components
 import StepZero from "./steps/StepZero";
@@ -36,19 +33,11 @@ const STEP_COMPONENTS = [
 /**
  * SimulationStep: Main router component for the 9-step simulation wizard
  * Routes to the appropriate step component based on the URL parameter
- * Handles navigation and validation through the custom hook
+ * Note: Navigation buttons are handled in CreateSimulation parent component
  */
 export default function SimulationStep() {
   const { stepNumber } = useParams();
-  const navigate = useNavigate();
   const currentStep = parseInt(stepNumber || "0");
-
-  // Use custom hook for step logic, validation, and navigation
-  const { isCurrentStepValid, handleNext, handlePrevious } = useSimulationLogic(
-    currentStep,
-    TOTAL_STEPS,
-    navigate,
-  );
 
   // Get the appropriate step component
   const StepComponent = STEP_COMPONENTS[currentStep];
@@ -59,27 +48,8 @@ export default function SimulationStep() {
   }
 
   return (
-    <div className="flex flex-col p-4 md:p-6 px-[6%] md:px-[10%] w-full h-full min-h-0 overflow-hidden">
-      {/* Main step content area */}
-      <div className="flex-1 min-h-0 w-full flex items-center justify-center overflow-y-auto">
-        <div className="w-full">
-          <StepComponent />
-        </div>
-      </div>
-
-      {/* Navigation footer */}
-      <div className="shrink-0 flex justify-between border-t pt-4 w-full">
-        <Button
-          variant="outline"
-          onClick={handlePrevious}
-          disabled={currentStep === 0}
-        >
-          Previous
-        </Button>
-        <Button onClick={handleNext} disabled={!isCurrentStepValid()}>
-          {currentStep === TOTAL_STEPS - 1 ? "Finish" : "Next"}
-        </Button>
-      </div>
+    <div className="w-full max-w-3xl px-4">
+      <StepComponent />
     </div>
   );
 }

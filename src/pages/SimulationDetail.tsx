@@ -60,10 +60,10 @@ export default function SimulationDetail() {
   const params = simulation.simulation_params;
 
   return (
-    <main>
+    <main className="py-4">
       <NavBar />
 
-      <div className="flex flex-col items-start p-8 px-[10%]">
+      <div className="flex flex-col items-start px-[5%]">
         <Button
           variant="ghost"
           className="mb-6"
@@ -91,7 +91,7 @@ export default function SimulationDetail() {
         </div>
 
         {/* Simulation Configuration */}
-        <div className="w-full p-6">
+        <div className="w-full py-6">
           <h2 className="text-xl font-semibold mb-4 text-center">
             Simulation Configuration
           </h2>
@@ -149,11 +149,11 @@ export default function SimulationDetail() {
               </p>
             </div>
             {params?.verificationParams && (
-              <div className="col-span-2">
-                <p className="text-sm text-muted-foreground mb-2">
+              <div className="col-span-2 flex flex-col items-center">
+                <p className="text-sm text-muted-foreground mb-2 text-center">
                   Verification Parameters
                 </p>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap justify-center">
                   {params.verificationParams.temperature && (
                     <Badge variant="outline">Temperature</Badge>
                   )}

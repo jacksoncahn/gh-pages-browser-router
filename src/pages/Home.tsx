@@ -6,7 +6,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="min-h-screen flex flex-col py-4">
       <NavBar showButton={false} />
       <div className="flex-1 flex flex-col items-center justify-center p-8">
         <div className="max-w-3xl text-center space-y-6">

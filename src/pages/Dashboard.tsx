@@ -13,7 +13,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <main>
+    <main className="py-4">
       <NavBar />
       <div className="p-4 flex flex-col">
         <h1 className="text-3xl font-bold mb-4 flex">My Simulations</h1>
