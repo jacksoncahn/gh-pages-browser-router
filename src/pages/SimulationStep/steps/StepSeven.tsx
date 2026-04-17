@@ -45,12 +45,14 @@ export default function StepSeven() {
         </p>
       )}
 
-      <CodeBlock
-        code={generateStepCommand(
-          7,
-          simulation.currentSimulation?.simulation_params,
-        )}
-      />
+      {requiresConfigFiles && (
+        <CodeBlock
+          code={generateStepCommand(
+            7,
+            simulation.currentSimulation?.simulation_params,
+          )}
+        />
+      )}
     </div>
   );
 }

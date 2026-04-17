@@ -12,6 +12,7 @@ import { STEP_CONFIG } from "@/constants/simulation.constants";
 export default function StepEight() {
   const simulation = useSimulation();
   const params = simulation.currentSimulation?.simulation_params;
+  const showCodeBlock = params?.verificationParams?.temperature || params?.verificationParams?.pressure || params?.verificationParams?.system_volume;
   const { title, description } = STEP_CONFIG[8];
 
   return (
@@ -46,12 +47,14 @@ export default function StepEight() {
           }
         />
       </div>
-      <CodeBlock
+
+      {showCodeBlock &&
+        <CodeBlock
         code={generateStepCommand(
           8,
           simulation.currentSimulation?.simulation_params,
         )}
-      />
+      />}
     </div>
   );
 }
