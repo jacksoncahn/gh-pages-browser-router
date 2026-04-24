@@ -1,7 +1,5 @@
 import { type ReactNode, useEffect, useState } from "react";
-import {
-  SimulationContext,
-} from "@/contexts/SimulationContext";
+import { SimulationContext } from "@/contexts/SimulationContext";
 import { type SimulationDraft } from "@/types/simulation.types";
 import type {
   SimulationParams,
@@ -80,129 +78,6 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  // // Save to sessionStorage whenever simulation changes
-  // useEffect(() => {
-  //   if (currentSimulation) {
-  //     sessionStorage.setItem(
-  //       "simulation-draft",
-  //       JSON.stringify(currentSimulation),
-  //     );
-  //   }
-  // }, [currentSimulation]);
-
-  // const updateSimulation = (updates: Partial<Simulation>) => {
-  //   setCurrentSimulation((prev) => ({
-  //     ...prev,
-  //     ...updates,
-  //     updated_at: new Date().toISOString(),
-  //   }));
-  // };
-
-  // const updateSimulationParams = (paramUpdates: Partial<SimulationParams>) => {
-  //   setCurrentSimulation((prev) => ({
-  //     ...prev,
-  //     simulation_params: {
-  //       ...prev?.simulation_params,
-  //       ...paramUpdates,
-  //     } as SimulationParams,
-  //     updated_at: new Date().toISOString(),
-  //   }));
-  // };
-
-  // const updateGromacsVersion = (version: string) => {
-  //   updateSimulationParams({ gromacsVersion: version });
-  // };
-
-  // const updateSimulationName = (name: string) => {
-  //   updateSimulation({ simName: name });
-  // };
-
-  // const updateProteinId = (proteinId: string) => {
-  //   updateSimulationParams({ proteinId });
-  // };
-
-  // const updateCleanProtein = (cleanProtein: boolean) => {
-  //   updateSimulationParams({ cleanProtein });
-  // };
-
-  // const updateProteinMetadata = (metadata: ProteinMetadata | null) => {
-  //   updateSimulationParams({ proteinMetadata: metadata });
-  // };
-
-  // const updateForceField = (forceField: ForceField) => {
-  //   updateSimulationParams({ forceField });
-  // };
-
-  // const updateWaterModel = (waterModel: WaterModel) => {
-  //   updateSimulationParams({ waterModel });
-  // };
-
-  // const updateBoxDistance = (distance: number) => {
-  //   updateSimulationParams({ boxDistance: distance });
-  // };
-
-  // const updateBoxType = (boxType: BoxType) => {
-  //   updateSimulationParams({ boxType });
-  // };
-
-  // const updatePositiveIon = (ion: PositiveIonType) => {
-  //   updateSimulationParams({ positiveIon: ion });
-  // };
-
-  // const updateNegativeIon = (ion: NegativeIonType) => {
-  //   updateSimulationParams({ negativeIon: ion });
-  // };
-
-  // const updateSolventGroup = (group: string) => {
-  //   updateSimulationParams({ solventGroup: group } as any);
-  // };
-
-  // const updateIonConcentration = (concentration: number) => {
-  //   updateSimulationParams({ ion_concentration: concentration } as any);
-  // };
-
-  // const updateEquilibriation = (
-  //   equilibriation: "none" | "nvt" | "npt" | "both",
-  // ) => {
-  //   updateSimulationParams({ equilibriationOptions: equilibriation } as any);
-  // };
-
-  // const updateVerification = (
-  //   field: "temperature" | "pressure" | "system_volume",
-  //   value: boolean,
-  // ) => {
-  //   setCurrentSimulation((prev) => ({
-  //     ...prev,
-  //     simulation_params: {
-  //       ...prev?.simulation_params,
-  //       verificationParams: {
-  //         ...prev?.simulation_params?.verificationParams,
-  //         [field]: value,
-  //       },
-  //     } as SimulationParams,
-  //     updated_at: new Date().toISOString(),
-  //   }));
-  // };
-
-  // const completeSimulation = () => {
-  //   if (currentSimulation && currentSimulation.simName) {
-  //     const completedSim: Simulation = {
-  //       ...currentSimulation,
-  //       id: generateSimulationId(),
-  //       status: "complete",
-  //       updated_at: new Date().toISOString(),
-  //     } as Simulation;
-
-  //     saveSimulation(completedSim);
-  //     sessionStorage.removeItem("simulation-draft");
-  //     setCurrentSimulation(createInitialSimulation());
-  //   }
-  // };
-
-  // const resetSimulation = () => {
-  //   sessionStorage.removeItem("simulation-draft");
-  //   setCurrentSimulation(createInitialSimulation());
-  // };
   const updateGromacsVersion = (version: string) =>
     updateSimulationParam(
       "gromacsVersion",
@@ -260,9 +135,6 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
       };
     });
   };
-
-  // const completeSimulation = () => updateSimulation({ status: "complete" });
-  // const resetSimulation = () => setCurrentSimulation(createInitialSimulation());
 
   const completeSimulation = () => {
     if (currentSimulation && currentSimulation.simName) {
