@@ -1,8 +1,9 @@
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { ControlledCombobox } from "@/components/shared/ControlledCombobox";
 import { CodeBlock } from "@/components/shared/CodeBlock";
 import { generateStepCommand } from "@/utils/gromacs.utils";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
+import type { EquilibrationOptions } from "@/types/simulation.types";
 
 /**
  * Step Seven: Equilibration
@@ -13,7 +14,7 @@ export default function StepSeven() {
   const simulation = useSimulation();
   const params = simulation.currentSimulation?.simulation_params;
   const { title, description } = STEP_CONFIG[7];
-  const equilibrationType = (params as any)?.equilibriationOptions;
+  const equilibrationType = params?.equilibriationOptions;
 
   // Check if user selected an equilibration type that requires configuration files
   const requiresConfigFiles =
@@ -31,7 +32,7 @@ export default function StepSeven() {
         placeholder="eg. npt"
         value={equilibrationType}
         onChange={(value) =>
-          simulation.updateEquilibriation(value.toLowerCase() as any)
+          simulation.updateEquilibriation(value.toLowerCase() as EquilibrationOptions)
         }
         horizontal
       />

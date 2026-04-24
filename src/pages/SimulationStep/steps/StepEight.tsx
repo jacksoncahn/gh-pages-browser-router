@@ -1,4 +1,4 @@
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { CheckboxItem } from "@/components/shared/CheckboxItem";
 import { CodeBlock } from "@/components/shared/CodeBlock";
 import { generateStepCommand } from "@/utils/gromacs.utils";

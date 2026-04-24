@@ -101,8 +101,13 @@ export async function fetchPDBMetadata(pdbId: string, signal?: AbortSignal): Pro
     };
 
     return { status: "success", data: metadata };
-  } catch (error: any) {
-    const message = error.name === "AbortError" ? "Request was aborted" : `Network error: ${error.message}`;
+  } catch (error: unknown) {
+    const message =
+      error instanceof DOMException && error.name === "AbortError"
+        ? "Request was aborted"
+        : error instanceof Error
+          ? `Network error: ${error.message}`
+          : "Network error: Unknown error";
     return { status: "error", message };
   }
 }

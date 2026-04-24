@@ -1,4 +1,4 @@
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
 import { ControlledCombobox } from "@/components/shared/ControlledCombobox";
 import { GromacsVersions, type GromacsVersion } from "@/types/simulation.types";

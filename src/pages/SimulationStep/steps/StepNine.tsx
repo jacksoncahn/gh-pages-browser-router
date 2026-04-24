@@ -1,4 +1,4 @@
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { CodeBlock } from "@/components/shared/CodeBlock";
 import { generateStepCommand } from "@/utils/gromacs.utils";
 import { STEP_CONFIG } from "@/constants/simulation.constants";

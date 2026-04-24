@@ -13,7 +13,7 @@ export type SimulationParams = {
   //TODO: flesh this out with actual simulation type once that is firmed up
   gromacsVersion: GromacsVersion
   proteinId: string
-  proteinMetadata?: ProteinMetadata
+  proteinMetadata?: ProteinMetadata | null
   cleanProtein: boolean
   forceField: ForceField
   waterModel: WaterModel
@@ -23,11 +23,13 @@ export type SimulationParams = {
   negativeIon: NegativeIonType
   solventGroup: SolventGroup
   ion_concentration: number
-  minimizationParams: MinimizationParams
   equilibriationOptions: EquilibrationOptions
-  equilibriationParams?: EquilibrationParams
   verificationParams: VerificationParams
 }
+
+export type SimulationDraft = Partial<Omit<Simulation, "simulation_params">> & {
+  simulation_params: Partial<SimulationParams> | null;
+};
 
 /* SIMULATION COMPONENTS */
 
@@ -48,7 +50,7 @@ export type ProteinMetadata = {
   molecular_weight: number | null
   pdbx_database_id_DOI: string | null
   citation_title: string | null
-  pdbx_keywords: string[] 
+  pdbx_keywords: string[]
   initial_release_date: string | null
   revision_date: string | null
 }

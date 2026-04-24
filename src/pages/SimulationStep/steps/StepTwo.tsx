@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download } from "lucide-react";
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { CodeBlock } from "@/components/shared/CodeBlock";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,6 +10,7 @@ import { downloadPDBFile } from "@/utils/download.utils";
 import { isValidPDBId } from "@/utils/simulation.utils";
 import { usePDBLookup } from "@/hooks/usePDBLookup";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
+import type { ProteinMetadata } from "@/types/simulation.types";
 
 /**
  * Step Two: Protein Selection
@@ -55,7 +56,7 @@ export default function StepTwo() {
 
         {/* Metadata Display */}
         {lookupStatus === "success" && params?.proteinMetadata && (
-          <PDBMetadataDisplay metadata={params.proteinMetadata} />
+          <PDBMetadataDisplay metadata={params?.proteinMetadata} />
         )}
 
         {/* Error States */}
@@ -107,7 +108,7 @@ export default function StepTwo() {
  * PDBMetadataDisplay: Subcomponent to display protein metadata from RSCB
  * Shows atom count, molecular weight, experimental method, DOI, release date, and keywords
  */
-function PDBMetadataDisplay({ metadata }: any) {
+function PDBMetadataDisplay({metadata} : {metadata: ProteinMetadata}) {
   return (
     <div className="flex flex-col rounded-md p-4 items-center gap-2 bg-card mt-4">
       <p className="font-bold">{metadata.title}</p>

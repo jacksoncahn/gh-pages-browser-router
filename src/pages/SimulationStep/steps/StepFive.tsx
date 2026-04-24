@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { ControlledCombobox } from "@/components/shared/ControlledCombobox";
 import { CodeBlock } from "@/components/shared/CodeBlock";
 import {
@@ -56,8 +56,10 @@ export default function StepFive() {
           <ControlledCombobox
             label="Solvent Group"
             items={Object.values(SolventGroups)}
-            value={(params as any)?.solventGroup}
-            onChange={(value) => simulation.updateSolventGroup(value)}
+            value={params?.solventGroup}
+            onChange={(value) =>
+              simulation.updateSolventGroup(value as "SOL" | "HOH")
+            }
           />
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Ion Concentration (M)</label>
@@ -67,7 +69,7 @@ export default function StepFive() {
               step="0.05"
               min="0"
               disabled={isNeutralizeChecked}
-              value={(params as any)?.ion_concentration ?? ""}
+              value={params?.ion_concentration ?? ""}
               onChange={(e) =>
                 simulation.updateIonConcentration(
                   parseFloat(e.target.value) || 0,

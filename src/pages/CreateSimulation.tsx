@@ -2,7 +2,7 @@ import { NavBar } from "@/components/shared/nav-bar";
 import { Outlet, useParams, useNavigate } from "react-router";
 import { CreationStepProgress } from "@/components/simulation/step-progress";
 import { useEffect } from "react";
-import { SimulationProvider } from "@/contexts/SimulationContext";
+import { SimulationProvider } from "@/contexts/SimulationProvider";
 import { Button } from "@/components/ui/button";
 import { useSimulationLogic } from "@/hooks/useSimulationLogic";
 import { TOTAL_STEPS } from "@/constants/simulation.constants";

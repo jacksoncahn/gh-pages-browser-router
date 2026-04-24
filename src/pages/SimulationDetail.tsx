@@ -3,28 +3,29 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, Copy, Download } from "lucide-react";
 import { useParams, useNavigate } from "react-router";
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import { getSimulationById } from "@/utils/simulation.utils";
 import { generateCompleteBashScript } from "@/utils/gromacs.utils";
 import { downloadTextFile, copyToClipboard } from "@/utils/download.utils";
-import type { Simulation } from "@/types/simulation.types";
 import { AppFooter } from "@/components/shared/app-footer";
+import type { SimulationParams } from "@/types/simulation.types";
 
 export default function SimulationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [simulation, setSimulation] = useState<Simulation | null>(null);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      const sim = getSimulationById(parseInt(id));
-      setSimulation(sim);
-    }
+  const simulation = useMemo(() => {
+    if (!id) return null;
+    return getSimulationById(parseInt(id));
   }, [id]);
 
+  const script = useMemo(() => {
+    return simulation ? generateCompleteBashScript(simulation, false) : "";
+  }, [simulation]);
+
   const handleCopyScript = async () => {
-    const script = generateCompleteBashScript(simulation, false);
+    if (!script) return;
     const success = await copyToClipboard(script);
     if (success) {
       setCopied(true);
@@ -33,7 +34,7 @@ export default function SimulationDetail() {
   };
 
   const handleDownloadBashScript = () => {
-    const script = generateCompleteBashScript(simulation, false);
+    if (!script) return;
     const simName = simulation?.simName || "simulation";
     const filename = `${simName.replace(/\s+/g, "_")}_gromacs.sh`;
     downloadTextFile(script, filename);
@@ -58,7 +59,7 @@ export default function SimulationDetail() {
     );
   }
 
-  const params = simulation.simulation_params;
+  const params = simulation.simulation_params as SimulationParams;
 
   return (
     <main className="py-4">
@@ -116,8 +117,8 @@ export default function SimulationDetail() {
             <div>
               <p className="text-sm text-muted-foreground">Box Distance</p>
               <p className="font-medium">
-                {(params as any)?.boxDistance
-                  ? `${(params as any).boxDistance} units?`
+                {params.boxDistance
+                  ? `${params.boxDistance} units?`
                   : "N/A"}
               </p>
             </div>
@@ -140,13 +141,13 @@ export default function SimulationDetail() {
             <div>
               <p className="text-sm text-muted-foreground">Solvent Group</p>
               <p className="font-medium">
-                {(params as any)?.solventGroup || "N/A"}
+                {params.solventGroup || "N/A"}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Equilibriation</p>
               <p className="font-medium">
-                {(params as any)?.equilibriationOptions || "none"}
+                {params.equilibriationOptions || "none"}
               </p>
             </div>
             {params?.verificationParams && (
@@ -175,9 +176,7 @@ export default function SimulationDetail() {
           <h2 className="text-xl font-semibold mb-4">GROMACS Script</h2>
           <div className="relative flex flex-col gap-2">
             <pre className="bg-card p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word max-h-96 overflow-y-auto text-left border">
-              <code className="text-xs">
-                {generateCompleteBashScript(simulation, false)}
-              </code>
+              <code className="text-xs">{script}</code>
             </pre>
             <div className="flex gap-2 justify-end">
               <Button size="sm" variant="outline" onClick={handleCopyScript}>

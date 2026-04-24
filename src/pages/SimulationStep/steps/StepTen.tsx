@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Download } from "lucide-react";
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { generateCompleteBashScript } from "@/utils/gromacs.utils";
 import { copyToClipboard, downloadTextFile } from "@/utils/download.utils";
 import { STEP_CONFIG } from "@/constants/simulation.constants";

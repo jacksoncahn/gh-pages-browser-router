@@ -1,4 +1,9 @@
-import { WaterModelCoordinateTemplates, type Simulation, type SimulationParams } from "@/types/simulation.types";
+import {
+  WaterModelCoordinateTemplates,
+  type Simulation,
+  type SimulationParams,
+  type SimulationDraft,
+} from "@/types/simulation.types";
 
 /**
  * Echo values for different gmx energy command outputs.
@@ -23,7 +28,7 @@ const ECHO_VALUES = {
  */
 export function generateStepCommand(
   step: number,
-  params?: SimulationParams,
+  params?: Partial<SimulationParams> | null,
   inBashScript: boolean = false
 ): string {
   const gromacsVersion = params?.gromacsVersion || "[GROMACS_VERSION]";
@@ -32,12 +37,12 @@ export function generateStepCommand(
   const forceField = params?.forceField || "[FORCE_FIELD]";
   const waterModel = params?.waterModel || "[WATER_MODEL]";
   const boxType = params?.boxType || "[BOX_TYPE]";
-  const boxDistance = (params as any)?.boxDistance || "[DISTANCE]";
+  const boxDistance = params?.boxDistance || "[DISTANCE]";
   const positiveIon = params?.positiveIon || "[POSITIVE_ION]";
   const negativeIon = params?.negativeIon || "[NEGATIVE_ION]";
   const solventGroup = params?.solventGroup || "[SOLVENT_GROUP]";
   const ionConcentration = params?.ion_concentration || "[ION_CONCENTRATION]";
-  const equilibriation = (params as any)?.equilibriationOptions || "none";
+  const equilibriation = params?.equilibriationOptions || "none";
   const verification = params?.verificationParams
 
   const commands: { [key: number]: string } = {
@@ -65,7 +70,7 @@ export function generateStepCommand(
  * @returns Complete bash script as a string
  */
 export function generateCompleteBashScript(
-  simulation: Simulation | Partial<Simulation> | null | undefined,
+  simulation: Simulation | Partial<Simulation> | SimulationDraft | null | undefined,
   useISODate: boolean = true
 ): string {
   if (!simulation) return "";
@@ -82,10 +87,10 @@ export function generateCompleteBashScript(
   const forceField = params?.forceField || "[FORCE_FIELD]";
   const waterModel = params?.waterModel || "[WATER_MODEL]";
   const boxType = params?.boxType || "[BOX_TYPE]";
-  const boxDistance = (params as any)?.boxDistance || "[DISTANCE]";
+  const boxDistance = params?.boxDistance || "[DISTANCE]";
   const positiveIon = params?.positiveIon || "[POSITIVE_ION]";
   const negativeIon = params?.negativeIon || "[NEGATIVE_ION]";
-  const solventGroup = (params as any)?.solventGroup || "[SOLVENT_GROUP]";
+  const solventGroup = params?.solventGroup || "[SOLVENT_GROUP]";
   const ionConcentration = params?.ion_concentration || "[ION_CONCENTRATION]";
 
   return `#!/bin/bash

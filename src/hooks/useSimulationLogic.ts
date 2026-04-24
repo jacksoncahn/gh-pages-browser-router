@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { validateStep } from "@/utils/simulation.utils";
 
 import { useState } from "react";
@@ -24,7 +24,7 @@ export const useSimulationLogic = (
     if (!simulation.currentSimulation) {
       return false;
     }
-    return validateStep(currentStep, simulation.currentSimulation as any);
+    return validateStep(currentStep, simulation.currentSimulation);
   };
 
   /**

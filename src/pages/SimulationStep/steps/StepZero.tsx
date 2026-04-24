@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
 
 export default function StepZero() {

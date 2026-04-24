@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { ControlledCombobox } from "@/components/shared/ControlledCombobox";
 import { CodeBlock } from "@/components/shared/CodeBlock";
 import { BoxTypes, type BoxType } from "@/types/simulation.types";
@@ -27,7 +27,7 @@ export default function StepFour() {
             placeholder="e.g. 1.0"
             step="0.1"
             min="0.1"
-            value={(params as any)?.boxDistance || ""}
+            value={params?.boxDistance || ""}
             onChange={(e) =>
               simulation.updateBoxDistance(parseFloat(e.target.value) || 0)
             }

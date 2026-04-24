@@ -3,15 +3,10 @@ import { AppFooter } from "@/components/shared/app-footer";
 import { NavBar } from "@/components/shared/nav-bar";
 import type { Simulation } from "@/types/simulation.types";
 import { getAllSimulations } from "@/utils/simulation.utils";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function Dashboard() {
-  const [simulations, setSimulations] = useState<Simulation[]>([]);
-
-  useEffect(() => {
-    const loadedSimulations = getAllSimulations();
-    setSimulations(loadedSimulations);
-  }, []);
+  const [simulations] = useState<Simulation[]>(() => getAllSimulations());
 
   return (
     <main className="min-h-dvh flex flex-col py-4">

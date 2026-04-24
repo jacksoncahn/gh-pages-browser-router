@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { isValidPDBId, handlePDBLookupLogic } from "@/utils/simulation.utils";
 
 type LookupStatus = "idle" | "loading" | "success" | "not_found" | "error";
@@ -32,7 +32,7 @@ export const usePDBLookup = () => {
         setLookupStatus("loading");
         setLookupError(null);
 
-        const result = await handlePDBLookupLogic(proteinId, simulation);
+        const result = await handlePDBLookupLogic(proteinId, simulation.updateProteinMetadata);
 
         setLookupStatus(result.status);
         setLookupError(result.error);

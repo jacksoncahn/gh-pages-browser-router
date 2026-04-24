@@ -1,4 +1,4 @@
-import { useSimulation } from "@/contexts/SimulationContext";
+import { useSimulation } from "@/hooks/useSimulation";
 import { ControlledCombobox } from "@/components/shared/ControlledCombobox";
 import { CodeBlock } from "@/components/shared/CodeBlock";
 import {
