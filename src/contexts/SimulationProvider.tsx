@@ -137,18 +137,22 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const completeSimulation = () => {
-    if (currentSimulation && currentSimulation.simName) {
-      const completedSim: Simulation = {
-        ...currentSimulation,
-        id: generateSimulationId(),
-        status: "complete",
-        updated_at: new Date().toISOString(),
-      } as Simulation;
+    const sim = currentSimulation;
+    if (!sim?.simName || !sim.simulation_params) return;
 
-      saveSimulation(completedSim);
-      sessionStorage.removeItem("simulation-draft");
-      setCurrentSimulation(createInitialSimulation());
-    }
+    const completedSim: Simulation = {
+      id: sim.id ?? generateSimulationId(),
+      simName: sim.simName,
+      created_at: sim.created_at ?? new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      simulation_params:
+        sim.simulation_params as Simulation["simulation_params"],
+      status: "complete",
+    };
+
+    saveSimulation(completedSim);
+    sessionStorage.removeItem("simulation-draft");
+    setCurrentSimulation(createInitialSimulation());
   };
 
   const resetSimulation = () => {

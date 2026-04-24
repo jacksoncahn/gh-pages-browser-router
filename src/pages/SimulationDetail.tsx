@@ -1,7 +1,7 @@
 import { NavBar } from "@/components/shared/nav-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, Copy, Download } from "lucide-react";
+import { ChevronLeft, Copy, Download, Pencil } from "lucide-react";
 import { useParams, useNavigate } from "react-router";
 import { useState, useMemo } from "react";
 import { getSimulationById } from "@/utils/simulation.utils";
@@ -23,6 +23,12 @@ export default function SimulationDetail() {
   const script = useMemo(() => {
     return simulation ? generateCompleteBashScript(simulation, false) : "";
   }, [simulation]);
+
+  const handleEditSimulation = () => {
+    if (!simulation) return;
+    sessionStorage.setItem("simulation-draft", JSON.stringify(simulation));
+    navigate("/simulation/new/0");
+  };
 
   const handleCopyScript = async () => {
     if (!script) return;
@@ -66,14 +72,16 @@ export default function SimulationDetail() {
       <NavBar />
 
       <div className="flex flex-col items-start px-[5%]">
-        <Button
-          variant="ghost"
-          className="mb-6"
-          onClick={() => navigate("/dashboard")}
-        >
-          <ChevronLeft />
-          Back
-        </Button>
+        <div className="mb-6 flex w-full items-center justify-between">
+          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+            <ChevronLeft />
+            Back
+          </Button>
+          <Button variant="outline" onClick={handleEditSimulation}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit Simulation
+          </Button>
+        </div>
 
         {/* Header */}
         <div className="flex flex-col items-start gap-2 mb-8">
@@ -117,9 +125,7 @@ export default function SimulationDetail() {
             <div>
               <p className="text-sm text-muted-foreground">Box Distance</p>
               <p className="font-medium">
-                {params.boxDistance
-                  ? `${params.boxDistance} units?`
-                  : "N/A"}
+                {params.boxDistance ? `${params.boxDistance} units?` : "N/A"}
               </p>
             </div>
             <div>
@@ -140,9 +146,7 @@ export default function SimulationDetail() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Solvent Group</p>
-              <p className="font-medium">
-                {params.solventGroup || "N/A"}
-              </p>
+              <p className="font-medium">{params.solventGroup || "N/A"}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Equilibriation</p>
