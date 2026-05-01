@@ -105,7 +105,7 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     updateSimulationParam("negativeIon", ion);
   const updateSolventGroup = (group: SolventGroup) =>
     updateSimulationParam("solventGroup", group);
-  const updateIonConcentration = (concentration: number) =>
+  const updateIonConcentration = (concentration: number | null) =>
     updateSimulationParam("ion_concentration", concentration);
   const updateEquilibriation = (equilibriation: EquilibrationOptions) =>
     updateSimulationParam("equilibriationOptions", equilibriation);

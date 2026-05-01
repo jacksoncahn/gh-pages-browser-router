@@ -22,7 +22,7 @@ export type SimulationParams = {
   positiveIon: PositiveIonType
   negativeIon: NegativeIonType
   solventGroup: SolventGroup
-  ion_concentration: number
+  ion_concentration: number | null
   equilibriationOptions: EquilibrationOptions
   verificationParams: VerificationParams
   enableMaxIonsWarning: boolean

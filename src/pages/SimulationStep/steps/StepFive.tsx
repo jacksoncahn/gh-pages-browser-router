@@ -26,7 +26,7 @@ export default function StepFive() {
   const { title, description } = STEP_CONFIG[5];
 
   const isNeutralizeChecked = !!params?.cleanProtein;
-  const isIonWarningEnabled = !!params?.enableMaxIonsWarning
+  const isIonWarningEnabled = !!params?.enableMaxIonsWarning;
 
   return (
     <div className="gap-4 flex flex-col items-center">
@@ -68,13 +68,11 @@ export default function StepFive() {
               placeholder="e.g. 0.15"
               step="0.05"
               min="0"
-              disabled={isNeutralizeChecked}
               value={params?.ion_concentration ?? ""}
-              onChange={(e) =>
-                simulation.updateIonConcentration(
-                  parseFloat(e.target.value) || 0,
-                )
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                simulation.updateIonConcentration(value === "" ? null : parseFloat(value));
+              }}
             />
           </div>
         </div>
@@ -91,16 +89,13 @@ export default function StepFive() {
               onCheckedChange={(checked) => {
                 const isChecked = checked === true;
                 simulation.updateCleanProtein(isChecked);
-                if (isChecked) {
-                  simulation.updateIonConcentration(0);
-                }
               }}
             />
             <FieldLabel
               htmlFor="neutralize-ions"
               className="flex-none text-center leading-snug"
             >
-              Add the amount of ions needed to neutralize the system
+              Neutralize the system
             </FieldLabel>
           </Field>
         </FieldGroup>
@@ -108,7 +103,9 @@ export default function StepFive() {
         <MaxWarnings
           enabled={isIonWarningEnabled}
           value={params?.maxIonWarnings ?? null}
-          onEnabledChange={(enabled) => simulation.updateEnableMaxIonsWarning(enabled)}
+          onEnabledChange={(enabled) =>
+            simulation.updateEnableMaxIonsWarning(enabled)
+          }
           onValueChange={(value) => simulation.updateIonMaxWarnings(value)}
         />
       </div>
