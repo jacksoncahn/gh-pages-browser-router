@@ -69,10 +69,9 @@ export default function SimulationDetail() {
 
   return (
     <main className="py-4">
-      <NavBar />
-
-      <div className="flex flex-col items-start px-[5%]">
-        <div className="mb-6 flex w-full items-center justify-between">
+      <header className="sticky top-0 z-10 bg-background pb-2">
+        <NavBar />
+        <div className="mb-6 flex w-full items-center justify-between pt-2">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ChevronLeft />
             Back
@@ -82,7 +81,9 @@ export default function SimulationDetail() {
             Edit Simulation
           </Button>
         </div>
+      </header>
 
+      <div className="flex flex-col items-start px-[5%]">
         {/* Header */}
         <div className="flex flex-col items-start gap-2 mb-8">
           <div className="flex items-center gap-4">
@@ -125,7 +126,7 @@ export default function SimulationDetail() {
             <div>
               <p className="text-sm text-muted-foreground">Box Distance</p>
               <p className="font-medium">
-                {params.boxDistance ? `${params.boxDistance} units?` : "N/A"}
+                {params.boxDistance ? `${params.boxDistance} nm` : "N/A"}
               </p>
             </div>
             <div>
@@ -179,7 +180,7 @@ export default function SimulationDetail() {
         <div className="w-full">
           <h2 className="text-xl font-semibold mb-4">GROMACS Script</h2>
           <div className="relative flex flex-col gap-2">
-            <pre className="bg-card p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word max-h-96 overflow-y-auto text-left border">
+            <pre className="bg-card p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word max-h-120 overflow-y-auto text-left border">
               <code className="text-xs">{script}</code>
             </pre>
             <div className="flex gap-2 justify-end">
