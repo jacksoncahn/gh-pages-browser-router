@@ -109,6 +109,22 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     updateSimulationParam("ion_concentration", concentration);
   const updateEquilibriation = (equilibriation: EquilibrationOptions) =>
     updateSimulationParam("equilibriationOptions", equilibriation);
+  const updateEnableMaxIonsWarning = (enabled: boolean) =>
+    updateSimulationParam("enableMaxIonsWarning", enabled);
+  const updateIonMaxWarnings = (maxIonWarnings: number | null) =>
+    updateSimulationParam("maxIonWarnings", maxIonWarnings);
+  const updateEnableMaxMinimizationWarning = (enabled: boolean) =>
+    updateSimulationParam("enableMaxMinimizationWarning", enabled);
+  const updateMinimizationMaxWarnings = (maxWarnings: number | null) =>
+    updateSimulationParam("maxMinimizationWarnings", maxWarnings);
+  const updateEnableMaxEquilibrationWarning = (enabled: boolean) =>
+    updateSimulationParam("enableMaxEquilibrationWarning", enabled);
+  const updateMaxEquilibrationWarnings = (maxWarnings: number | null) =>
+    updateSimulationParam("maxEquilibrationWarnings", maxWarnings);
+  const updateEnableRunSimulationWarning = (enabled: boolean) =>
+    updateSimulationParam("enableRunSimulationWarning", enabled);
+  const updateMaxRunSimulationWarnings = (maxWarnings: number | null) =>
+    updateSimulationParam("maxRunSimulationWarnings", maxWarnings);
 
   const updateVerification = (
     field: "temperature" | "pressure" | "system_volume",
@@ -179,6 +195,14 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
         updateIonConcentration,
         updateEquilibriation,
         updateVerification,
+        updateEnableMaxIonsWarning,
+        updateIonMaxWarnings,
+        updateEnableMaxMinimizationWarning,
+        updateMinimizationMaxWarnings,
+        updateEnableMaxEquilibrationWarning,
+        updateMaxEquilibrationWarnings,
+        updateEnableRunSimulationWarning,
+        updateMaxRunSimulationWarnings,
         completeSimulation,
         resetSimulation,
       }}

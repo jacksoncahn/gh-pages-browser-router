@@ -13,6 +13,7 @@ import { generateStepCommand } from "@/utils/gromacs.utils";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MaxWarnings } from "@/components/simulation/max-warnings";
 
 /**
  * Step Five: Ionization
@@ -25,6 +26,7 @@ export default function StepFive() {
   const { title, description } = STEP_CONFIG[5];
 
   const isNeutralizeChecked = !!params?.cleanProtein;
+  const isIonWarningEnabled = !!params?.enableMaxIonsWarning
 
   return (
     <div className="gap-4 flex flex-col items-center">
@@ -57,9 +59,7 @@ export default function StepFive() {
             label="Solvent Group"
             items={Object.values(SolventGroups)}
             value={params?.solventGroup}
-            onChange={(value) =>
-              simulation.updateSolventGroup(value as "SOL" | "HOH")
-            }
+            onChange={(value) => simulation.updateSolventGroup(value as "SOL")}
           />
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Ion Concentration (M)</label>
@@ -84,12 +84,6 @@ export default function StepFive() {
             orientation="horizontal"
             className="w-fit mx-auto items-center gap-3"
           >
-            <FieldLabel
-              htmlFor="neutralize-ions"
-              className="flex-none text-center leading-snug"
-            >
-              Add the amount of ions needed to neutralize the system
-            </FieldLabel>
             <Checkbox
               id="neutralize-ions"
               name="neutralize-ions"
@@ -102,14 +96,21 @@ export default function StepFive() {
                 }
               }}
             />
+            <FieldLabel
+              htmlFor="neutralize-ions"
+              className="flex-none text-center leading-snug"
+            >
+              Add the amount of ions needed to neutralize the system
+            </FieldLabel>
           </Field>
         </FieldGroup>
 
-        <p className="mx-auto max-w-2xl px-1 text-center text-sm text-muted-foreground leading-relaxed">
-          Note: Turning on neutralize automatically sets ion concentration to 0
-          and adds the required ions so the total net charge of the system is
-          zero.
-        </p>
+        <MaxWarnings
+          enabled={isIonWarningEnabled}
+          value={params?.maxIonWarnings ?? null}
+          onEnabledChange={(enabled) => simulation.updateEnableMaxIonsWarning(enabled)}
+          onValueChange={(value) => simulation.updateIonMaxWarnings(value)}
+        />
       </div>
 
       <CodeBlock

@@ -25,6 +25,14 @@ export type SimulationParams = {
   ion_concentration: number
   equilibriationOptions: EquilibrationOptions
   verificationParams: VerificationParams
+  enableMaxIonsWarning: boolean
+  maxIonWarnings: number | null
+  enableMaxMinimizationWarning: boolean
+  maxMinimizationWarnings: number | null
+  enableMaxEquilibrationWarning: boolean
+  maxEquilibrationWarnings: number | null
+  enableRunSimulationWarning: boolean
+  maxRunSimulationWarnings: number | null
 }
 
 export type SimulationDraft = Partial<Omit<Simulation, "simulation_params">> & {
@@ -162,14 +170,14 @@ export const WaterModelCoordinateTemplates = {
 export const BoxTypes = {
   Cubic: "cubic",
   Triclinic: "triclinic",
-  Octahedran: "octahedran",
+  Octahedron: "octahedron",
   Dodecahedran: "dodecahedron",
 } as const
 
 export const BoxType = z.union([
   z.literal(BoxTypes.Cubic),
   z.literal(BoxTypes.Triclinic),
-  z.literal(BoxTypes.Octahedran),
+  z.literal(BoxTypes.Octahedron),
   z.literal(BoxTypes.Dodecahedran)
 ])
 
@@ -201,12 +209,10 @@ export type NegativeIonType = z.infer<typeof NegativeIonType>
 /* SOLVENT GROUPS */
 export const SolventGroups = {
   SOL: "SOL",
-  HOH: "HOH",
 } as const
 
 export const SolventGroup = z.union([
   z.literal(SolventGroups.SOL),
-  z.literal(SolventGroups.HOH)
 ])
 
 export type SolventGroup = z.infer<typeof SolventGroup>

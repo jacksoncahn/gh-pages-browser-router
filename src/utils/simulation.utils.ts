@@ -78,13 +78,14 @@ export const validateStep = (
     case 4:
       return !!params?.boxDistance && !!params?.boxType;
     case 5:
-      return !!params?.positiveIon && !!params?.negativeIon && !!params?.solventGroup;
+      return !!params?.positiveIon && !!params?.negativeIon && !!params?.solventGroup && (params.enableMaxIonsWarning ? params.maxIonWarnings != null : true);
     case 6:
-      return true;
+      return (params?.enableMaxMinimizationWarning ? params.maxMinimizationWarnings != null : true);
     case 7:
-      return !!params?.equilibriationOptions;
+      return !!params?.equilibriationOptions && (params.enableMaxEquilibrationWarning ? params.maxEquilibrationWarnings != null : true);
     case 8:
     case 9:
+      return (params?.enableRunSimulationWarning ? params.maxRunSimulationWarnings != null : true);
     case 10:
       return true;
     default:

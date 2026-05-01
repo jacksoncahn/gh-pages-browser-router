@@ -4,6 +4,7 @@ import { CodeBlock } from "@/components/shared/CodeBlock";
 import { generateStepCommand } from "@/utils/gromacs.utils";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
 import type { EquilibrationOptions } from "@/types/simulation.types";
+import { MaxWarnings } from "@/components/simulation/max-warnings";
 
 /**
  * Step Seven: Equilibration
@@ -22,6 +23,8 @@ export default function StepSeven() {
     equilibrationType === "npt" ||
     equilibrationType === "both";
 
+  const isEquilibrationWarningEnabled = !!params?.enableMaxEquilibrationWarning;
+
   return (
     <div className="gap-4 flex flex-col items-center">
       <h2 className="text-2xl font-bold mb-2">{title}</h2>
@@ -32,7 +35,9 @@ export default function StepSeven() {
         placeholder="eg. npt"
         value={equilibrationType}
         onChange={(value) =>
-          simulation.updateEquilibriation(value.toLowerCase() as EquilibrationOptions)
+          simulation.updateEquilibriation(
+            value.toLowerCase() as EquilibrationOptions,
+          )
         }
         horizontal
       />
@@ -48,12 +53,25 @@ export default function StepSeven() {
       )}
 
       {requiresConfigFiles && (
-        <CodeBlock
-          code={generateStepCommand(
-            7,
-            simulation.currentSimulation?.simulation_params,
-          )}
-        />
+        <>
+          <MaxWarnings
+            enabled={isEquilibrationWarningEnabled}
+            value={params?.maxEquilibrationWarnings ?? null}
+            onEnabledChange={(enabled) =>
+              simulation.updateEnableMaxEquilibrationWarning(enabled)
+            }
+            onValueChange={(value) =>
+              simulation.updateMaxEquilibrationWarnings(value)
+            }
+          />
+
+          <CodeBlock
+            code={generateStepCommand(
+              7,
+              simulation.currentSimulation?.simulation_params,
+            )}
+          />
+        </>
       )}
     </div>
   );

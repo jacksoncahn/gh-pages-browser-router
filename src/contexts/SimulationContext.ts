@@ -31,6 +31,14 @@ interface SimulationContextType {
     field: "temperature" | "pressure" | "system_volume",
     value: boolean,
   ) => void;
+  updateEnableMaxIonsWarning: (enabled: boolean) => void;
+  updateIonMaxWarnings: (maxIonWarnings: number | null) => void;
+  updateEnableMaxMinimizationWarning: (enabled: boolean) => void;
+  updateMinimizationMaxWarnings: (maxWarnings: number | null) => void;
+  updateEnableMaxEquilibrationWarning: (enabled: boolean) => void;
+  updateMaxEquilibrationWarnings: (maxWarnings: number | null) => void;
+  updateEnableRunSimulationWarning: (enabled: boolean) => void;
+  updateMaxRunSimulationWarnings: (maxWarnings: number | null) => void;
   completeSimulation: () => void;
   resetSimulation: () => void;
 }
