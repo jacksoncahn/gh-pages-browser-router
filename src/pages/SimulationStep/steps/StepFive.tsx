@@ -25,7 +25,7 @@ export default function StepFive() {
   const params = simulation.currentSimulation?.simulation_params;
   const { title, description } = STEP_CONFIG[5];
 
-  const isNeutralizeChecked = !!params?.cleanProtein;
+  const isNeutralizeChecked = !!params?.neutralizeSystem;
   const isIonWarningEnabled = !!params?.enableMaxIonsWarning;
 
   return (
@@ -80,7 +80,7 @@ export default function StepFive() {
         <FieldGroup className="mt-2">
           <Field
             orientation="horizontal"
-            className="w-fit mx-auto items-center gap-3"
+            className="w-fit mx-auto items-center justify-center gap-3"
           >
             <Checkbox
               id="neutralize-ions"
@@ -88,12 +88,12 @@ export default function StepFive() {
               checked={isNeutralizeChecked}
               onCheckedChange={(checked) => {
                 const isChecked = checked === true;
-                simulation.updateCleanProtein(isChecked);
+                simulation.updateNeutralizeSystem(isChecked);
               }}
             />
             <FieldLabel
               htmlFor="neutralize-ions"
-              className="flex-none text-center leading-snug"
+              className="flex-none! text-center leading-snug"
             >
               Neutralize the system
             </FieldLabel>

@@ -23,6 +23,8 @@ export type SimulationParams = {
   negativeIon: NegativeIonType
   solventGroup: SolventGroup
   ion_concentration: number | null
+  neutralizeSystem: boolean
+  useGpu: boolean
   equilibriationOptions: EquilibrationOptions
   verificationParams: VerificationParams
   enableMaxIonsWarning: boolean
@@ -154,7 +156,7 @@ export const ForceFieldToWaterModelMap: Record<ForceField, WaterModel[]> = {
   [ForceFields.OPLS_AA_L]: [WaterModels.None, WaterModels.TIP4P, WaterModels.TIP4P_EW, WaterModels.TIP3P, WaterModels.TIP5P, WaterModels.TIP5_PE, WaterModels.SPC, WaterModels.SPC_E],
 }
 
-export const WaterModelCoordinateTemplates = {
+export const WaterModelCoordinateTemplates: Record<WaterModel, string> = {
   [WaterModels.TIP3P]: "spc216.gro",
   [WaterModels.TIPS3P]: "spc216.gro",
   [WaterModels.SPC]: "spc216.gro",
@@ -164,6 +166,7 @@ export const WaterModelCoordinateTemplates = {
   [WaterModels.TIP4P_EW]: "tip4p.gro",
   [WaterModels.TIP5P]: "tip5p.gro",
   [WaterModels.TIP5_PE]: "tip5p.gro",
+  [WaterModels.None]: "",
 }
 
 /* BOX TYPES */

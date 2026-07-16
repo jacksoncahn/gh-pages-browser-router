@@ -81,14 +81,14 @@ export default function StepTwo() {
 
         {/* Clean Protein Option */}
         <FieldGroup className="mt-2">
-          <Field orientation="horizontal">
+          <Field orientation="horizontal" className="justify-center">
             <Checkbox
               id="clean-protein"
               name="clean-protein"
               onCheckedChange={simulation.updateCleanProtein}
               checked={!!params?.cleanProtein}
             />
-            <FieldLabel htmlFor="clean-protein">
+            <FieldLabel htmlFor="clean-protein" className="flex-none!">
               Remove structural waters from protein
             </FieldLabel>
           </Field>

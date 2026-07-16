@@ -107,6 +107,10 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
     updateSimulationParam("solventGroup", group);
   const updateIonConcentration = (concentration: number | null) =>
     updateSimulationParam("ion_concentration", concentration);
+  const updateNeutralizeSystem = (neutralize: boolean) =>
+    updateSimulationParam("neutralizeSystem", neutralize);
+  const updateUseGpu = (useGpu: boolean) =>
+    updateSimulationParam("useGpu", useGpu);
   const updateEquilibriation = (equilibriation: EquilibrationOptions) =>
     updateSimulationParam("equilibriationOptions", equilibriation);
   const updateEnableMaxIonsWarning = (enabled: boolean) =>
@@ -193,6 +197,8 @@ export const SimulationProvider = ({ children }: { children: ReactNode }) => {
         updateNegativeIon,
         updateSolventGroup,
         updateIonConcentration,
+        updateNeutralizeSystem,
+        updateUseGpu,
         updateEquilibriation,
         updateVerification,
         updateEnableMaxIonsWarning,

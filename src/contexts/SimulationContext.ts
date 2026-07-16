@@ -26,6 +26,8 @@ interface SimulationContextType {
   updateNegativeIon: (ion: NegativeIonType) => void;
   updateSolventGroup: (group: SolventGroup) => void;
   updateIonConcentration: (concentration: number | null) => void;
+  updateNeutralizeSystem: (neutralize: boolean) => void;
+  updateUseGpu: (useGpu: boolean) => void;
   updateEquilibriation: (equilibriation: EquilibrationOptions) => void;
   updateVerification: (
     field: "temperature" | "pressure" | "system_volume",

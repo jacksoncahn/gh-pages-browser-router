@@ -72,11 +72,16 @@ export const validateStep = (
     case 1:
       return !!params?.gromacsVersion;
     case 2:
-      return !!params?.proteinId?.trim() && !!params?.proteinMetadata;
+      return (
+        !!params?.proteinId?.trim() &&
+        !!params?.proteinMetadata &&
+        params.proteinMetadata.entryId.toUpperCase() ===
+          params.proteinId.trim().toUpperCase()
+      );
     case 3:
       return !!params?.forceField && !!params?.waterModel;
     case 4:
-      return !!params?.boxDistance && !!params?.boxType;
+      return !!params?.boxDistance && params.boxDistance > 0 && !!params?.boxType;
     case 5:
       return !!params?.positiveIon && !!params?.negativeIon && !!params?.solventGroup && (params.enableMaxIonsWarning ? params.maxIonWarnings != null : true);
     case 6:

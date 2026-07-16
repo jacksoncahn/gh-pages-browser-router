@@ -21,7 +21,7 @@ const ECHO_VALUES = {
  * Generates GROMACS commands for a specific simulation step.
  * Uses placeholder format [PLACEHOLDER] for missing values.
  * 
- * @param step - Step number (1-9)
+ * @param step - Step number (2-9); other step numbers have no command and return ""
  * @param params - Simulation parameters
  * @returns GROMACS command(s) for the specified step
  */
@@ -39,7 +39,9 @@ export function generateStepCommand(
   const boxDistance = params?.boxDistance || "[DISTANCE]";
   const positiveIon = params?.positiveIon || "[POSITIVE_ION]";
   const negativeIon = params?.negativeIon || "[NEGATIVE_ION]";
-  const ionConcentration = params?.ion_concentration || "[ION_CONCENTRATION]";
+  const ionConcentration = params?.ion_concentration ?? null;
+  const neutralizeSystem = params?.neutralizeSystem || false;
+  const useGpu = params?.useGpu || false;
   const equilibriation = params?.equilibriationOptions || "none";
   const verification = params?.verificationParams
 
@@ -52,17 +54,28 @@ export function generateStepCommand(
   const enableRunSimulationWarning = params?.enableRunSimulationWarning || false
   const maxRunSimulationWarnings = params?.maxRunSimulationWarnings != null ? params.maxRunSimulationWarnings : "[MAX_RUN_SIMULATION_WARNINGS]";
 
+  // genion accepts -neutral and -conc together (neutralize the net charge, then
+  // add the requested salt concentration on top), so both flags can be present at once.
+  const genionFlags = [
+    neutralizeSystem ? "-neutral" : "",
+    ionConcentration != null ? `-conc ${ionConcentration}` : "",
+    enableMaxIonsWarning ? `-maxwarn ${maxIonWarnings}` : "",
+  ].filter(Boolean).join(" ");
+  const genionCmd = `${gromacsVersion} genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon}${genionFlags ? ` ${genionFlags}` : ""}`;
+
+  const nbFlag = useGpu ? " -nb gpu" : "";
+
   const commands: { [key: number]: string } = {
     2: `wget https://files.rcsb.org/download/${proteinId}.pdb \n${cleanProtein ? `grep -v HOH ${proteinId}.pdb > ${proteinId}_clean.pdb\n` : ''}`,
     3: `${gromacsVersion} pdb2gmx -f ${cleanProtein ? `${proteinId}_clean.pdb` : `${proteinId}.pdb`} -o ${proteinId}.gro -water ${waterModel} -ff ${forceField}`,
     4: `${gromacsVersion} editconf -f ${proteinId}.gro -o ${proteinId}_box.gro -c -d ${boxDistance} -bt ${boxType} \n${gromacsVersion} solvate -cp ${proteinId}_box.gro -o ${proteinId}_inSolution.gro -p topol.top ${waterModel !== 'None' && waterModel !== '[WATER_MODEL]' ? `-cs ${WaterModelCoordinateTemplates[waterModel]}` : ""}`,
-    5: `${gromacsVersion} grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\n${inBashScript ? `echo -e "${ECHO_VALUES.solvent_SOL}" | ${gromacsVersion} genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon} ${(ionConcentration != null && ionConcentration != "[ION_CONCENTRATION]") ? `-conc ${ionConcentration}` : "-neutral"}` : `${gromacsVersion} genion -s ${proteinId}_ions.tpr -o ${proteinId}_ions.gro -p topol.top -pname ${positiveIon} -nname ${negativeIon} ${(ionConcentration != 0 && ionConcentration != "[ION_CONCENTRATION]") ? `-conc ${ionConcentration}` : "-neutral"}`} ${enableMaxIonsWarning ? `-maxwarn ${maxIonWarnings}` : ""}`,
+    5: `${gromacsVersion} grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\n${inBashScript ? `echo -e "${ECHO_VALUES.solvent_SOL}" | ${genionCmd}` : genionCmd}`,
     6: `${gromacsVersion} grompp -f minim.mdp -c ${proteinId}_ions.gro -p topol.top -o ${proteinId}_em.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_em\n${inBashScript ?
       `echo -e "${ECHO_VALUES.potential}" | ${gromacsVersion} energy -f ${proteinId}_em.edr -o ${proteinId}_potential.xvg` :
       `${gromacsVersion} energy -f ${proteinId}_em.edr -o ${proteinId}_potential.xvg`} ${enableMaxMinimizationWarning ? `-maxwarn ${maxMinimizationWarnings}` : ""}`,
-    7: `${(equilibriation === "nvt" || equilibriation === "both") ? `${gromacsVersion} grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_nvt -nb gpu\n` : ""}${(equilibriation === "npt" || equilibriation === "both") ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_npt -nb gpu` : ""} ${enableMaxEquilibrationWarning ? `-maxwarn ${maxEquilibrationWarnings}` : ""}`,
+    7: `${(equilibriation === "nvt" || equilibriation === "both") ? `${gromacsVersion} grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_nvt${nbFlag}\n` : ""}${(equilibriation === "npt" || equilibriation === "both") ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_npt${nbFlag}` : ""} ${enableMaxEquilibrationWarning ? `-maxwarn ${maxEquilibrationWarnings}` : ""}`,
     8: `${inBashScript ? `${verification?.temperature ? `echo -e "${ECHO_VALUES.temperature}" | ${gromacsVersion} energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""}${verification?.pressure ? `echo -e "${ECHO_VALUES.pressure}" | ${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\n` : ""}${verification?.system_volume ? `echo -e "${ECHO_VALUES.system_volume}" | ${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg\n` : ""}` : `${verification?.temperature ? `${gromacsVersion} energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""}${verification?.pressure ? `${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\n` : ""}${verification?.system_volume ? `${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg\n` : ""}`}`,
-    9: `${gromacsVersion} grompp -f md.mdp -c ${proteinId}_npt.gro -t ${proteinId}_npt.cpt -p topol.top -o ${proteinId}_md.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_md -nb gpu ${enableRunSimulationWarning ? `-maxwarn ${maxRunSimulationWarnings}` : ""}`,
+    9: `${gromacsVersion} grompp -f md.mdp -c ${proteinId}_npt.gro -t ${proteinId}_npt.cpt -p topol.top -o ${proteinId}_md.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_md${nbFlag} ${enableRunSimulationWarning ? `-maxwarn ${maxRunSimulationWarnings}` : ""}`,
   };
 
   return commands[step] || "";
@@ -98,7 +111,7 @@ export function generateCompleteBashScript(
   const positiveIon = params?.positiveIon || "[POSITIVE_ION]";
   const negativeIon = params?.negativeIon || "[NEGATIVE_ION]";
   const solventGroup = params?.solventGroup || "[SOLVENT_GROUP]";
-  const ionConcentration = params?.ion_concentration || "[ION_CONCENTRATION]";
+  const ionConcentration = params?.ion_concentration;
 
   return `#!/bin/bash
 # GROMACS Molecular Dynamics Simulation Script
@@ -115,7 +128,7 @@ export function generateCompleteBashScript(
 # Positive Ion: ${positiveIon}
 # Negative Ion: ${negativeIon}
 # Solvent Group: ${solventGroup}
-# Ion Concentration: ${ionConcentration != "[ION_CONCENTRATION]" ? ionConcentration : 0} M
+# Ion Concentration: ${ionConcentration ?? 0} M
 
 echo "Starting GROMACS simulation: ${simName}"
 

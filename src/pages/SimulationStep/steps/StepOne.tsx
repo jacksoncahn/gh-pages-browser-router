@@ -2,6 +2,8 @@ import { useSimulation } from "@/hooks/useSimulation";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
 import { ControlledCombobox } from "@/components/shared/ControlledCombobox";
 import { GromacsVersions, type GromacsVersion } from "@/types/simulation.types";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function StepOne() {
   const simulation = useSimulation();
@@ -23,6 +25,22 @@ export default function StepOne() {
         }
         horizontal={true}
       />
+
+      <FieldGroup className="mt-2 items-center">
+        <Field orientation="horizontal" className="justify-center">
+          <Checkbox
+            id="use-gpu"
+            name="use-gpu"
+            checked={!!params?.useGpu}
+            onCheckedChange={(checked) =>
+              simulation.updateUseGpu(checked === true)
+            }
+          />
+          <FieldLabel htmlFor="use-gpu" className="flex-none!">
+            Run on GPU (adds -nb gpu to mdrun commands)
+          </FieldLabel>
+        </Field>
+      </FieldGroup>
     </div>
   );
 }

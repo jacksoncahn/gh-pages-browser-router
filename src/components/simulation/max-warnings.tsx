@@ -19,7 +19,7 @@ export function MaxWarnings({
     <FieldGroup className="mt-2">
       <Field
         orientation="horizontal"
-        className="w-lg mx-auto items-center gap-x-3"
+        className="w-lg mx-auto items-center justify-center gap-x-3"
       >
         <Checkbox
           id="max-warnings"
@@ -31,7 +31,7 @@ export function MaxWarnings({
         />
         <FieldLabel
           htmlFor="max-warnings"
-          className="flex-none text-center leading-snug"
+          className="flex-none! text-center leading-snug"
         >
           Bypass warnings to allow GROMACS to continue running despite potential issues
         </FieldLabel>
