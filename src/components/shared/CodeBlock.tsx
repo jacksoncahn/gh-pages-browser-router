@@ -12,7 +12,7 @@ interface CodeBlockProps {
  * Manages "Copied" state internally and provides visual feedback.
  */
 export function CodeBlock({ code, onCopy }: CodeBlockProps) {
-  const { copied, copy } = useCopyToClipboard();
+  const { copied, error, copy } = useCopyToClipboard();
 
   const handleCopy = async () => {
     const success = await copy(code);
@@ -28,7 +28,7 @@ export function CodeBlock({ code, onCopy }: CodeBlockProps) {
       </pre>
       <Button size="sm" variant="outline" onClick={handleCopy}>
         <Copy className="mr-2 h-4 w-4" />
-        {copied ? "Copied!" : "Copy"}
+        {copied ? "Copied!" : error ? "Failed to copy" : "Copy"}
       </Button>
     </div>
   );

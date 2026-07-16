@@ -14,7 +14,7 @@ import type { SimulationParams } from "@/types/simulation.types";
 export default function SimulationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { copied, copy } = useCopyToClipboard();
+  const { copied, error: copyError, copy } = useCopyToClipboard();
 
   const simulation = useMemo(() => {
     if (!id) return null;
@@ -183,7 +183,7 @@ export default function SimulationDetail() {
             <div className="flex gap-2 justify-end">
               <Button size="sm" variant="outline" onClick={handleCopyScript}>
                 <Copy className="mr-2 h-4 w-4" />
-                {copied ? "Copied!" : "Copy Script"}
+                {copied ? "Copied!" : copyError ? "Failed to copy" : "Copy Script"}
               </Button>
               <Button
                 size="sm"

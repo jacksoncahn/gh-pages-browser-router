@@ -14,7 +14,7 @@ import { STEP_CONFIG } from "@/constants/simulation.constants";
 export default function StepTen() {
   const simulation = useSimulation();
   const { title, description } = STEP_CONFIG[10];
-  const { copied, copy } = useCopyToClipboard();
+  const { copied, error: copyError, copy } = useCopyToClipboard();
 
   /**
    * Copy the bash script to clipboard
@@ -54,7 +54,7 @@ export default function StepTen() {
           <div className="flex gap-2 justify-end">
             <Button size="sm" variant="outline" onClick={handleCopyBashScript}>
               <Copy className="mr-2 h-4 w-4" />
-              {copied ? "Copied!" : "Copy Script"}
+              {copied ? "Copied!" : copyError ? "Failed to copy" : "Copy Script"}
             </Button>
             <Button
               size="sm"

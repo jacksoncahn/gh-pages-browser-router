@@ -46,15 +46,16 @@ export function generatePDBDownloadUrl(pdbId: string): string {
 /**
  * Downloads a PDB file from RCSB PDB database.
  * Opens the download URL in a new window, triggering browser's download.
- * 
+ *
  * @param pdbId - The PDB ID (e.g., "1AKI")
+ * @returns true if the download was triggered, false if the PDB ID was invalid
  */
-export function downloadPDBFile(pdbId: string): void {
+export function downloadPDBFile(pdbId: string): boolean {
   if (!pdbId || !pdbId.trim()) {
     console.error("Invalid PDB ID");
-    return;
+    return false;
   }
-  
+
   const url = generatePDBDownloadUrl(pdbId);
   const anchor = document.createElement("a");
   anchor.href = url;
@@ -63,4 +64,5 @@ export function downloadPDBFile(pdbId: string): void {
   document.body.appendChild(anchor);
   anchor.click();
   document.body.removeChild(anchor);
+  return true;
 }

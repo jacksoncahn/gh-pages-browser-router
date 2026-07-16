@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download } from "lucide-react";
@@ -23,6 +24,7 @@ export default function StepTwo() {
   const { title, description } = STEP_CONFIG[2];
 
   const { handlePDBLookup, lookupStatus, lookupError } = usePDBLookup();
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const currentStep = 2;
 
@@ -69,7 +71,14 @@ export default function StepTwo() {
         {/* Download PDB File */}
         <Button
           variant={lookupStatus === "success" ? "default" : "outline"}
-          onClick={() => downloadPDBFile(params?.proteinId || "")}
+          onClick={() => {
+            const success = downloadPDBFile(params?.proteinId || "");
+            setDownloadError(
+              success
+                ? null
+                : "Unable to download PDB file. Check the PDB ID and try again.",
+            );
+          }}
           disabled={
             !isValidPDBId(params?.proteinId || "") || lookupStatus !== "success"
           }
@@ -78,6 +87,10 @@ export default function StepTwo() {
           <Download className="mr-2 h-4 w-4" />
           Download {params?.proteinId?.toUpperCase() || "PDB"} File
         </Button>
+
+        {downloadError && (
+          <p className="text-sm text-destructive">{downloadError}</p>
+        )}
 
         {/* Clean Protein Option */}
         <FieldGroup className="mt-2">

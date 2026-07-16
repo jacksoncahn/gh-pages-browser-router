@@ -19,7 +19,7 @@ export function CreationStepProgress({ step, totalSteps }: StepProgressProps) {
           <div
             key={index}
             className={`flex-1 h-4 rounded-full ${
-              isActive ? "bg-primary" : "bg-gray-300"
+              isActive ? "bg-primary" : "bg-muted"
             }`}
           ></div>
         )
