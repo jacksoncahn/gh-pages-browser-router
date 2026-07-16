@@ -21,8 +21,11 @@ export default function StepFour() {
       <p>{description}</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 w-full">
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium">Distance (nm)</label>
+          <label htmlFor="box-distance" className="text-sm font-medium">
+            Distance (nm)
+          </label>
           <Input
+            id="box-distance"
             type="number"
             placeholder="e.g. 1.0"
             step="0.1"

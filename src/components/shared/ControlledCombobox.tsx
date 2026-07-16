@@ -1,3 +1,4 @@
+import { useId } from "react";
 import {
   Combobox,
   ComboboxContent,
@@ -28,15 +29,18 @@ export function ControlledCombobox({
   placeholder,
   horizontal = false,
 }: ControlledComboboxProps) {
+  const inputId = useId();
+
   return (
     <div className={`flex ${horizontal ? "flex-row items-center" : "flex-col"} gap-2`}>
-      <label className="text-sm font-medium">{label}</label>
+      <label htmlFor={inputId} className="text-sm font-medium">{label}</label>
       <Combobox
         items={items}
         value={value ?? null}
         onValueChange={(val) => val && onChange(val)}
       >
         <ComboboxInput
+          id={inputId}
           placeholder={placeholder || `Select ${label.toLowerCase()}`}
         />
         <ComboboxContent>

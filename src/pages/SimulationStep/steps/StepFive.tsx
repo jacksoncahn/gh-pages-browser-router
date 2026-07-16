@@ -62,8 +62,11 @@ export default function StepFive() {
             onChange={(value) => simulation.updateSolventGroup(value as "SOL")}
           />
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Ion Concentration (M)</label>
+            <label htmlFor="ion-concentration" className="text-sm font-medium">
+              Ion Concentration (M)
+            </label>
             <Input
+              id="ion-concentration"
               type="number"
               placeholder="e.g. 0.15"
               step="0.05"

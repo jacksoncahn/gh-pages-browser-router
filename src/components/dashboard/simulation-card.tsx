@@ -59,7 +59,18 @@ export function SimulationCard({ simulation, status }: SimulationCardProps) {
   };
 
   return (
-    <Card className="cursor-pointer w-full p-5" onClick={handleClick}>
+    <Card
+      className="cursor-pointer w-full p-5 focus-visible:outline-2 focus-visible:outline-ring"
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+    >
       {/* TODO: could add picture representation of sim */}
       <CardTitle className="text-xl text-left mb-0.5">
         {simulation.name}

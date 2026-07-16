@@ -115,13 +115,22 @@ export function generateStepCommand(
       : "",
   ].filter(Boolean).join("\n");
 
+  const equilibrationCmd = [
+    (equilibration === "nvt" || equilibration === "both")
+      ? `${gromacsVersion} grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_nvt${nbFlag}`
+      : "",
+    (equilibration === "npt" || equilibration === "both")
+      ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_npt${nbFlag}`
+      : "",
+  ].filter(Boolean).join("\n");
+
   const commands: { [key: number]: string } = {
     2: `wget https://files.rcsb.org/download/${proteinId}.pdb \n${cleanProtein ? `grep -v HOH ${proteinId}.pdb > ${proteinId}_clean.pdb\n` : ''}`,
     3: `${gromacsVersion} pdb2gmx -f ${cleanProtein ? `${proteinId}_clean.pdb` : `${proteinId}.pdb`} -o ${proteinId}.gro -water ${waterModel} -ff ${forceField}`,
     4: `${gromacsVersion} editconf -f ${proteinId}.gro -o ${proteinId}_box.gro -c -d ${boxDistance} -bt ${boxType} \n${gromacsVersion} solvate -cp ${proteinId}_box.gro -o ${proteinId}_inSolution.gro -p topol.top ${waterModel !== 'None' && waterModel !== '[WATER_MODEL]' ? `-cs ${waterModelCoordinateFile(waterModel)}` : ""}`,
     5: `${gromacsVersion} grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\n${withEcho(genionCmd, ECHO_VALUES.solvent_SOL, inBashScript)}`,
     6: `${gromacsVersion} grompp -f minim.mdp -c ${proteinId}_ions.gro -p topol.top -o ${proteinId}_em.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_em\n${withEcho(minimizationEnergyCmd, ECHO_VALUES.potential, inBashScript)} ${enableMaxMinimizationWarning ? `-maxwarn ${maxMinimizationWarnings}` : ""}`,
-    7: `${(equilibration === "nvt" || equilibration === "both") ? `${gromacsVersion} grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_nvt${nbFlag}\n` : ""}${(equilibration === "npt" || equilibration === "both") ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_npt${nbFlag}` : ""} ${enableMaxEquilibrationWarning ? `-maxwarn ${maxEquilibrationWarnings}` : ""}`,
+    7: `${equilibrationCmd}${enableMaxEquilibrationWarning ? ` -maxwarn ${maxEquilibrationWarnings}` : ""}`,
     8: verificationCmd,
     9: `${gromacsVersion} grompp -f md.mdp -c ${proteinId}_npt.gro -t ${proteinId}_npt.cpt -p topol.top -o ${proteinId}_md.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_md${nbFlag} ${enableRunSimulationWarning ? `-maxwarn ${maxRunSimulationWarnings}` : ""}`,
   };

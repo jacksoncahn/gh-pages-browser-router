@@ -10,7 +10,11 @@ export default function StepZero() {
     <div className="gap-4 flex flex-col items-center">
       <h2 className="text-2xl font-bold mb-2">{title}</h2>
       <p>{description}</p>
+      <label htmlFor="simulation-name" className="sr-only">
+        Simulation Name
+      </label>
       <Input
+        id="simulation-name"
         placeholder="eg. Adenylate Kinase in Water"
         className="mt-2"
         value={simulation.currentSimulation?.simName || ""}
