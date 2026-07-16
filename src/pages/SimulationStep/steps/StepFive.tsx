@@ -25,8 +25,8 @@ export default function StepFive() {
   const params = simulation.currentSimulation?.simulation_params
   const { title, description } = STEP_CONFIG[5]
 
-  const isNeutralizeChecked = !!params?.neutralizeSystem
-  const isIonWarningEnabled = !!params?.enableMaxIonsWarning
+  const isNeutralizeChecked = Boolean(params?.neutralizeSystem)
+  const isIonWarningEnabled = Boolean(params?.enableMaxIonsWarning)
 
   return (
     <div className="gap-4 flex flex-col items-center">

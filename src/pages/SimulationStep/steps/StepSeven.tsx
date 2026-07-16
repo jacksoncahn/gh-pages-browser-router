@@ -20,7 +20,7 @@ export default function StepSeven() {
   // Check if user selected an equilibration type that requires configuration files
   const requiresConfigFiles = equilibrationType === 'nvt' || equilibrationType === 'npt' || equilibrationType === 'both'
 
-  const isEquilibrationWarningEnabled = !!params?.enableMaxEquilibrationWarning
+  const isEquilibrationWarningEnabled = Boolean(params?.enableMaxEquilibrationWarning)
 
   return (
     <div className="gap-4 flex flex-col items-center">

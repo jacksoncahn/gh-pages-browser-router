@@ -14,7 +14,7 @@ export default function StepNine() {
   const params = simulation.currentSimulation?.simulation_params
   const { title, description } = STEP_CONFIG[9]
 
-  const isRunWarningEnabled = !!params?.enableRunSimulationWarning
+  const isRunWarningEnabled = Boolean(params?.enableRunSimulationWarning)
 
   return (
     <div className="gap-4 flex flex-col items-center">

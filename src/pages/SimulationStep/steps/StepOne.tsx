@@ -29,7 +29,7 @@ export default function StepOne() {
           <Checkbox
             id="use-gpu"
             name="use-gpu"
-            checked={!!params?.useGpu}
+            checked={Boolean(params?.useGpu)}
             onCheckedChange={checked => simulation.updateUseGpu(checked === true)}
           />
           <FieldLabel htmlFor="use-gpu" className="flex-none!">

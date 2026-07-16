@@ -14,7 +14,7 @@ export default function StepSix() {
   const { title, description } = STEP_CONFIG[6]
 
   const params = simulation.currentSimulation?.simulation_params
-  const isMinimizationWarningEnabled = !!params?.enableMaxMinimizationWarning
+  const isMinimizationWarningEnabled = Boolean(params?.enableMaxMinimizationWarning)
 
   return (
     <div className="gap-4 flex flex-col items-center">

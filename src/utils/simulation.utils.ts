@@ -72,23 +72,23 @@ export const validateStep = (step: number, simulation: SimulationDraft | null): 
     case 0:
       return Boolean(simulation.simName && simulation.simName.trim().length > 0)
     case 1:
-      return !!params?.gromacsVersion
+      return Boolean(params?.gromacsVersion)
     case 2:
       return (
-        !!params?.proteinId?.trim() &&
-        !!params?.proteinMetadata &&
-        params.proteinMetadata.entryId.toUpperCase() === params.proteinId.trim().toUpperCase()
+        Boolean(params?.proteinId?.trim()) &&
+        Boolean(params?.proteinMetadata) &&
+        params?.proteinMetadata?.entryId.toUpperCase() === params?.proteinId?.trim().toUpperCase()
       )
     case 3:
-      return !!params?.forceField && !!params?.waterModel
+      return Boolean(params?.forceField) && Boolean(params?.waterModel)
     case 4:
-      return !!params?.boxDistance && params.boxDistance > 0 && !!params?.boxType
+      return Boolean(params?.boxDistance) && (params?.boxDistance ?? 0) > 0 && Boolean(params?.boxType)
     case 5:
       return (
-        !!params?.positiveIon &&
-        !!params?.negativeIon &&
-        !!params?.solventGroup &&
-        (params.enableMaxIonsWarning ? params.maxIonWarnings != null : true)
+        Boolean(params?.positiveIon) &&
+        Boolean(params?.negativeIon) &&
+        Boolean(params?.solventGroup) &&
+        (params?.enableMaxIonsWarning ? params?.maxIonWarnings != null : true)
       )
     case 6:
       return params?.enableMaxMinimizationWarning ? params.maxMinimizationWarnings != null : true
@@ -98,8 +98,8 @@ export const validateStep = (step: number, simulation: SimulationDraft | null): 
         params?.equilibrationOptions === 'npt' ||
         params?.equilibrationOptions === 'both'
       return (
-        !!params?.equilibrationOptions &&
-        (requiresConfigFiles && params.enableMaxEquilibrationWarning ? params.maxEquilibrationWarnings != null : true)
+        Boolean(params?.equilibrationOptions) &&
+        (requiresConfigFiles && params?.enableMaxEquilibrationWarning ? params?.maxEquilibrationWarnings != null : true)
       )
     }
     case 8:

@@ -87,7 +87,7 @@ export default function StepTwo() {
               id="clean-protein"
               name="clean-protein"
               onCheckedChange={simulation.updateCleanProtein}
-              checked={!!params?.cleanProtein}
+              checked={Boolean(params?.cleanProtein)}
             />
             <FieldLabel htmlFor="clean-protein" className="flex-none!">
               Remove structural waters from protein
