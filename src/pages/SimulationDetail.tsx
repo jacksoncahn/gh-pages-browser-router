@@ -3,17 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, Copy, Download, Pencil } from "lucide-react";
 import { useParams, useNavigate } from "react-router";
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { getSimulationById } from "@/utils/simulation.utils";
 import { generateCompleteBashScript } from "@/utils/gromacs.utils";
-import { downloadTextFile, copyToClipboard } from "@/utils/download.utils";
+import { downloadTextFile } from "@/utils/download.utils";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { AppFooter } from "@/components/shared/app-footer";
 import type { SimulationParams } from "@/types/simulation.types";
 
 export default function SimulationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   const simulation = useMemo(() => {
     if (!id) return null;
@@ -32,11 +33,7 @@ export default function SimulationDetail() {
 
   const handleCopyScript = async () => {
     if (!script) return;
-    const success = await copyToClipboard(script);
-    if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    await copy(script);
   };
 
   const handleDownloadBashScript = () => {
@@ -132,8 +129,8 @@ export default function SimulationDetail() {
             <div>
               <p className="text-sm text-muted-foreground">Ion Concentration</p>
               <p className="font-medium">
-                {params?.ion_concentration
-                  ? `${params.ion_concentration} M`
+                {params?.ionConcentration
+                  ? `${params.ionConcentration} M`
                   : "N/A"}
               </p>
             </div>
@@ -150,9 +147,9 @@ export default function SimulationDetail() {
               <p className="font-medium">{params.solventGroup || "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Equilibriation</p>
+              <p className="text-sm text-muted-foreground">Equilibration</p>
               <p className="font-medium">
-                {params.equilibriationOptions || "none"}
+                {params.equilibrationOptions || "none"}
               </p>
             </div>
             {params?.verificationParams && (

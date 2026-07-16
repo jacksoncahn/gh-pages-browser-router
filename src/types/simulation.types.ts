@@ -22,10 +22,10 @@ export type SimulationParams = {
   positiveIon: PositiveIonType
   negativeIon: NegativeIonType
   solventGroup: SolventGroup
-  ion_concentration: number | null
+  ionConcentration: number | null
   neutralizeSystem: boolean
   useGpu: boolean
-  equilibriationOptions: EquilibrationOptions
+  equilibrationOptions: EquilibrationOptions
   verificationParams: VerificationParams
   enableMaxIonsWarning: boolean
   maxIonWarnings: number | null
@@ -378,7 +378,21 @@ export const PCoupl = z.union([
 
 export type PCoupl = z.infer<typeof PCoupl>
 
-export type EquilibrationOptions = "none" | "nvt" | "npt" | "both"
+export const EquilibrationOptionValues = {
+  None: "none",
+  NVT: "nvt",
+  NPT: "npt",
+  Both: "both",
+} as const
+
+export const EquilibrationOptions = z.union([
+  z.literal(EquilibrationOptionValues.None),
+  z.literal(EquilibrationOptionValues.NVT),
+  z.literal(EquilibrationOptionValues.NPT),
+  z.literal(EquilibrationOptionValues.Both),
+])
+
+export type EquilibrationOptions = z.infer<typeof EquilibrationOptions>
 
 export type EquilibrationParams = {
   //TODO: need all parameter options for equilibration

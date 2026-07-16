@@ -15,7 +15,7 @@ export default function StepSeven() {
   const simulation = useSimulation();
   const params = simulation.currentSimulation?.simulation_params;
   const { title, description } = STEP_CONFIG[7];
-  const equilibrationType = params?.equilibriationOptions;
+  const equilibrationType = params?.equilibrationOptions;
 
   // Check if user selected an equilibration type that requires configuration files
   const requiresConfigFiles =
@@ -35,7 +35,7 @@ export default function StepSeven() {
         placeholder="eg. npt"
         value={equilibrationType}
         onChange={(value) =>
-          simulation.updateEquilibriation(
+          simulation.updateEquilibration(
             value.toLowerCase() as EquilibrationOptions,
           )
         }
@@ -45,7 +45,7 @@ export default function StepSeven() {
       {/* Conditional warning for NVT/NPT equilibration */}
       {requiresConfigFiles && (
         <p className="text-sm text-muted-foreground mt-2">
-          For NVT and/or NPT equilibriation, you must have the respective{" "}
+          For NVT and/or NPT equilibration, you must have the respective{" "}
           <code>nvt.mdp</code> and/or <code>npt.mdp</code> files in your project
           directory with the appropriate parameters set. The generated script
           will use those files for equilibration.

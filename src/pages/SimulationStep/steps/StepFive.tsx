@@ -68,7 +68,7 @@ export default function StepFive() {
               placeholder="e.g. 0.15"
               step="0.05"
               min="0"
-              value={params?.ion_concentration ?? ""}
+              value={params?.ionConcentration ?? ""}
               onChange={(e) => {
                 const value = e.target.value;
                 simulation.updateIonConcentration(value === "" ? null : parseFloat(value));

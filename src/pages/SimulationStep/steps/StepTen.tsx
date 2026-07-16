@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Download } from "lucide-react";
 import { useSimulation } from "@/hooks/useSimulation";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { generateCompleteBashScript } from "@/utils/gromacs.utils";
-import { copyToClipboard, downloadTextFile } from "@/utils/download.utils";
+import { downloadTextFile } from "@/utils/download.utils";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
 
 /**
@@ -14,18 +14,14 @@ import { STEP_CONFIG } from "@/constants/simulation.constants";
 export default function StepTen() {
   const simulation = useSimulation();
   const { title, description } = STEP_CONFIG[10];
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   /**
    * Copy the bash script to clipboard
    */
   const handleCopyBashScript = async () => {
     const script = generateCompleteBashScript(simulation.currentSimulation);
-    const success = await copyToClipboard(script);
-    if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    await copy(script);
   };
 
   /**

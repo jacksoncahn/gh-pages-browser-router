@@ -18,6 +18,40 @@ const ECHO_VALUES = {
 } as const;
 
 /**
+ * Resolves the display value for each parameter used across command generation,
+ * falling back to a bracketed placeholder when the value hasn't been set yet.
+ */
+function resolveDisplayParams(params?: Partial<SimulationParams> | null) {
+  return {
+    gromacsVersion: params?.gromacsVersion || "[GROMACS_VERSION]",
+    proteinId: params?.proteinId || "[PDB_ID]",
+    forceField: params?.forceField || "[FORCE_FIELD]",
+    waterModel: params?.waterModel || "[WATER_MODEL]",
+    boxType: params?.boxType || "[BOX_TYPE]",
+    boxDistance: params?.boxDistance || "[DISTANCE]",
+    positiveIon: params?.positiveIon || "[POSITIVE_ION]",
+    negativeIon: params?.negativeIon || "[NEGATIVE_ION]",
+    solventGroup: params?.solventGroup || "[SOLVENT_GROUP]",
+  };
+}
+
+/**
+ * Prefixes a gmx command with an `echo -e` pipe supplying the interactive
+ * prompt answer, when the command is destined for a non-interactive bash script.
+ */
+function withEcho(command: string, echoValue: string, inBashScript: boolean): string {
+  return inBashScript ? `echo -e "${echoValue}" | ${command}` : command;
+}
+
+/**
+ * Looks up the `-cs` coordinate file for a water model. Returns "" for
+ * values that aren't a real water model (e.g. "None" or an unset placeholder).
+ */
+function waterModelCoordinateFile(waterModel: string): string {
+  return (WaterModelCoordinateTemplates as Record<string, string>)[waterModel] ?? "";
+}
+
+/**
  * Generates GROMACS commands for a specific simulation step.
  * Uses placeholder format [PLACEHOLDER] for missing values.
  * 
@@ -30,19 +64,21 @@ export function generateStepCommand(
   params?: Partial<SimulationParams> | null,
   inBashScript: boolean = false
 ): string {
-  const gromacsVersion = params?.gromacsVersion || "[GROMACS_VERSION]";
-  const proteinId = params?.proteinId || "[PDB_ID]";
+  const {
+    gromacsVersion,
+    proteinId,
+    forceField,
+    waterModel,
+    boxType,
+    boxDistance,
+    positiveIon,
+    negativeIon,
+  } = resolveDisplayParams(params);
   const cleanProtein = params?.cleanProtein
-  const forceField = params?.forceField || "[FORCE_FIELD]";
-  const waterModel = params?.waterModel || "[WATER_MODEL]";
-  const boxType = params?.boxType || "[BOX_TYPE]";
-  const boxDistance = params?.boxDistance || "[DISTANCE]";
-  const positiveIon = params?.positiveIon || "[POSITIVE_ION]";
-  const negativeIon = params?.negativeIon || "[NEGATIVE_ION]";
-  const ionConcentration = params?.ion_concentration ?? null;
+  const ionConcentration = params?.ionConcentration ?? null;
   const neutralizeSystem = params?.neutralizeSystem || false;
   const useGpu = params?.useGpu || false;
-  const equilibriation = params?.equilibriationOptions || "none";
+  const equilibration = params?.equilibrationOptions || "none";
   const verification = params?.verificationParams
 
   const enableMaxIonsWarning = params?.enableMaxIonsWarning || false
@@ -65,16 +101,28 @@ export function generateStepCommand(
 
   const nbFlag = useGpu ? " -nb gpu" : "";
 
+  const minimizationEnergyCmd = `${gromacsVersion} energy -f ${proteinId}_em.edr -o ${proteinId}_potential.xvg`;
+
+  const verificationCmd = [
+    verification?.temperature
+      ? withEcho(`${gromacsVersion} energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg`, ECHO_VALUES.temperature, inBashScript)
+      : "",
+    verification?.pressure
+      ? withEcho(`${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg`, ECHO_VALUES.pressure, inBashScript)
+      : "",
+    verification?.system_volume
+      ? withEcho(`${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg`, ECHO_VALUES.system_volume, inBashScript)
+      : "",
+  ].filter(Boolean).join("\n");
+
   const commands: { [key: number]: string } = {
     2: `wget https://files.rcsb.org/download/${proteinId}.pdb \n${cleanProtein ? `grep -v HOH ${proteinId}.pdb > ${proteinId}_clean.pdb\n` : ''}`,
     3: `${gromacsVersion} pdb2gmx -f ${cleanProtein ? `${proteinId}_clean.pdb` : `${proteinId}.pdb`} -o ${proteinId}.gro -water ${waterModel} -ff ${forceField}`,
-    4: `${gromacsVersion} editconf -f ${proteinId}.gro -o ${proteinId}_box.gro -c -d ${boxDistance} -bt ${boxType} \n${gromacsVersion} solvate -cp ${proteinId}_box.gro -o ${proteinId}_inSolution.gro -p topol.top ${waterModel !== 'None' && waterModel !== '[WATER_MODEL]' ? `-cs ${WaterModelCoordinateTemplates[waterModel]}` : ""}`,
-    5: `${gromacsVersion} grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\n${inBashScript ? `echo -e "${ECHO_VALUES.solvent_SOL}" | ${genionCmd}` : genionCmd}`,
-    6: `${gromacsVersion} grompp -f minim.mdp -c ${proteinId}_ions.gro -p topol.top -o ${proteinId}_em.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_em\n${inBashScript ?
-      `echo -e "${ECHO_VALUES.potential}" | ${gromacsVersion} energy -f ${proteinId}_em.edr -o ${proteinId}_potential.xvg` :
-      `${gromacsVersion} energy -f ${proteinId}_em.edr -o ${proteinId}_potential.xvg`} ${enableMaxMinimizationWarning ? `-maxwarn ${maxMinimizationWarnings}` : ""}`,
-    7: `${(equilibriation === "nvt" || equilibriation === "both") ? `${gromacsVersion} grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_nvt${nbFlag}\n` : ""}${(equilibriation === "npt" || equilibriation === "both") ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_npt${nbFlag}` : ""} ${enableMaxEquilibrationWarning ? `-maxwarn ${maxEquilibrationWarnings}` : ""}`,
-    8: `${inBashScript ? `${verification?.temperature ? `echo -e "${ECHO_VALUES.temperature}" | ${gromacsVersion} energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""}${verification?.pressure ? `echo -e "${ECHO_VALUES.pressure}" | ${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\n` : ""}${verification?.system_volume ? `echo -e "${ECHO_VALUES.system_volume}" | ${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg\n` : ""}` : `${verification?.temperature ? `${gromacsVersion} energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg\n` : ""}${verification?.pressure ? `${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg\n` : ""}${verification?.system_volume ? `${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg\n` : ""}`}`,
+    4: `${gromacsVersion} editconf -f ${proteinId}.gro -o ${proteinId}_box.gro -c -d ${boxDistance} -bt ${boxType} \n${gromacsVersion} solvate -cp ${proteinId}_box.gro -o ${proteinId}_inSolution.gro -p topol.top ${waterModel !== 'None' && waterModel !== '[WATER_MODEL]' ? `-cs ${waterModelCoordinateFile(waterModel)}` : ""}`,
+    5: `${gromacsVersion} grompp -f ions.mdp -c ${proteinId}_inSolution.gro -p topol.top -o ${proteinId}_ions.tpr\n${withEcho(genionCmd, ECHO_VALUES.solvent_SOL, inBashScript)}`,
+    6: `${gromacsVersion} grompp -f minim.mdp -c ${proteinId}_ions.gro -p topol.top -o ${proteinId}_em.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_em\n${withEcho(minimizationEnergyCmd, ECHO_VALUES.potential, inBashScript)} ${enableMaxMinimizationWarning ? `-maxwarn ${maxMinimizationWarnings}` : ""}`,
+    7: `${(equilibration === "nvt" || equilibration === "both") ? `${gromacsVersion} grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_nvt${nbFlag}\n` : ""}${(equilibration === "npt" || equilibration === "both") ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_npt${nbFlag}` : ""} ${enableMaxEquilibrationWarning ? `-maxwarn ${maxEquilibrationWarnings}` : ""}`,
+    8: verificationCmd,
     9: `${gromacsVersion} grompp -f md.mdp -c ${proteinId}_npt.gro -t ${proteinId}_npt.cpt -p topol.top -o ${proteinId}_md.tpr\n${gromacsVersion} mdrun -deffnm ${proteinId}_md${nbFlag} ${enableRunSimulationWarning ? `-maxwarn ${maxRunSimulationWarnings}` : ""}`,
   };
 
@@ -103,20 +151,23 @@ export function generateCompleteBashScript(
       ? new Date(simulation.created_at).toLocaleString()
       : new Date().toLocaleString();
 
-  const proteinId = params?.proteinId || "[PDB_ID]";
-  const forceField = params?.forceField || "[FORCE_FIELD]";
-  const waterModel = params?.waterModel || "[WATER_MODEL]";
-  const boxType = params?.boxType || "[BOX_TYPE]";
-  const boxDistance = params?.boxDistance || "[DISTANCE]";
-  const positiveIon = params?.positiveIon || "[POSITIVE_ION]";
-  const negativeIon = params?.negativeIon || "[NEGATIVE_ION]";
-  const solventGroup = params?.solventGroup || "[SOLVENT_GROUP]";
-  const ionConcentration = params?.ion_concentration;
+  const {
+    gromacsVersion,
+    proteinId,
+    forceField,
+    waterModel,
+    boxType,
+    boxDistance,
+    positiveIon,
+    negativeIon,
+    solventGroup,
+  } = resolveDisplayParams(params);
+  const ionConcentration = params?.ionConcentration;
 
   return `#!/bin/bash
 # GROMACS Molecular Dynamics Simulation Script
 # Simulation Name: ${simName}
-# GROMACS Version: ${params?.gromacsVersion || "[GROMACS_VERSION]"}
+# GROMACS Version: ${gromacsVersion}
 # Generated: ${dateString}
 
 # ===== CONFIGURATION =====

@@ -9,8 +9,6 @@ type FinalType<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
  */
 export type Override<T, U extends Partial<Record<keyof T, unknown>>> = FinalType<Omit<T, keyof U> & U>
 
-export type Prettify<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
-
 /**
  * Get the keys of an object and its nested objects.
  */

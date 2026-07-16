@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
-import { useState } from "react";
-import { copyToClipboard } from "@/utils/download.utils";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 interface CodeBlockProps {
   code: string;
@@ -13,13 +12,11 @@ interface CodeBlockProps {
  * Manages "Copied" state internally and provides visual feedback.
  */
 export function CodeBlock({ code, onCopy }: CodeBlockProps) {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   const handleCopy = async () => {
-    const success = await copyToClipboard(code);
+    const success = await copy(code);
     if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
       onCopy?.();
     }
   };

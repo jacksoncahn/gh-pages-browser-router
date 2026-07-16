@@ -87,7 +87,7 @@ export const validateStep = (
     case 6:
       return (params?.enableMaxMinimizationWarning ? params.maxMinimizationWarnings != null : true);
     case 7:
-      return !!params?.equilibriationOptions && (params.enableMaxEquilibrationWarning ? params.maxEquilibrationWarnings != null : true);
+      return !!params?.equilibrationOptions && (params.enableMaxEquilibrationWarning ? params.maxEquilibrationWarnings != null : true);
     case 8:
     case 9:
       return (params?.enableRunSimulationWarning ? params.maxRunSimulationWarnings != null : true);

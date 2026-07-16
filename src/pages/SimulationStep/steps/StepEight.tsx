@@ -1,8 +1,9 @@
 import { useSimulation } from "@/hooks/useSimulation";
-import { CheckboxItem } from "@/components/shared/CheckboxItem";
 import { CodeBlock } from "@/components/shared/CodeBlock";
 import { generateStepCommand } from "@/utils/gromacs.utils";
 import { STEP_CONFIG } from "@/constants/simulation.constants";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
 
 /**
  * Step Eight: System Validation
@@ -19,34 +20,52 @@ export default function StepEight() {
     <div className="gap-4 flex flex-col items-center">
       <h2 className="text-2xl font-bold mb-2">{title}</h2>
       <p>{description}</p>
-      <div className="flex flex-col gap-3 mt-4">
+      <FieldGroup className="mt-4 gap-3">
         {/* Temperature Validation */}
-        <CheckboxItem
-          label="Temperature"
-          checked={params?.verificationParams?.temperature || false}
-          onChange={(checked) =>
-            simulation.updateVerification("temperature", checked)
-          }
-        />
+        <Field orientation="horizontal" className="w-fit mx-auto justify-center">
+          <Checkbox
+            id="verify-temperature"
+            name="verify-temperature"
+            checked={params?.verificationParams?.temperature || false}
+            onCheckedChange={(checked) =>
+              simulation.updateVerification("temperature", checked === true)
+            }
+          />
+          <FieldLabel htmlFor="verify-temperature" className="flex-none! whitespace-nowrap">
+            Temperature
+          </FieldLabel>
+        </Field>
 
         {/* Pressure Validation */}
-        <CheckboxItem
-          label="Pressure"
-          checked={params?.verificationParams?.pressure || false}
-          onChange={(checked) =>
-            simulation.updateVerification("pressure", checked)
-          }
-        />
+        <Field orientation="horizontal" className="w-fit mx-auto justify-center">
+          <Checkbox
+            id="verify-pressure"
+            name="verify-pressure"
+            checked={params?.verificationParams?.pressure || false}
+            onCheckedChange={(checked) =>
+              simulation.updateVerification("pressure", checked === true)
+            }
+          />
+          <FieldLabel htmlFor="verify-pressure" className="flex-none! whitespace-nowrap">
+            Pressure
+          </FieldLabel>
+        </Field>
 
         {/* System Volume Validation */}
-        <CheckboxItem
-          label="System Volume"
-          checked={params?.verificationParams?.system_volume || false}
-          onChange={(checked) =>
-            simulation.updateVerification("system_volume", checked)
-          }
-        />
-      </div>
+        <Field orientation="horizontal" className="w-fit mx-auto justify-center">
+          <Checkbox
+            id="verify-system-volume"
+            name="verify-system-volume"
+            checked={params?.verificationParams?.system_volume || false}
+            onCheckedChange={(checked) =>
+              simulation.updateVerification("system_volume", checked === true)
+            }
+          />
+          <FieldLabel htmlFor="verify-system-volume" className="flex-none! whitespace-nowrap">
+            System Volume
+          </FieldLabel>
+        </Field>
+      </FieldGroup>
 
       {showCodeBlock &&
         <CodeBlock
