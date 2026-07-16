@@ -1,50 +1,42 @@
-import { NavBar } from "@/components/shared/nav-bar";
-import { Outlet, useParams, useNavigate } from "react-router";
-import { CreationStepProgress } from "@/components/simulation/step-progress";
-import { useEffect } from "react";
-import { SimulationProvider } from "@/contexts/SimulationProvider";
-import { Button } from "@/components/ui/button";
-import { useSimulationLogic } from "@/hooks/useSimulationLogic";
-import { TOTAL_STEPS } from "@/constants/simulation.constants";
-import { AppFooter } from "@/components/shared/app-footer";
+import { NavBar } from '@/components/shared/nav-bar'
+import { Outlet, useParams, useNavigate } from 'react-router'
+import { CreationStepProgress } from '@/components/simulation/step-progress'
+import { useEffect } from 'react'
+import { SimulationProvider } from '@/contexts/SimulationProvider'
+import { Button } from '@/components/ui/button'
+import { useSimulationLogic } from '@/hooks/useSimulationLogic'
+import { TOTAL_STEPS } from '@/constants/simulation.constants'
+import { AppFooter } from '@/components/shared/app-footer'
 
 function NavigationButtons() {
-  const { stepNumber } = useParams();
-  const navigate = useNavigate();
-  const currentStep = stepNumber ? parseInt(stepNumber) : 0;
+  const { stepNumber } = useParams()
+  const navigate = useNavigate()
+  const currentStep = stepNumber ? parseInt(stepNumber) : 0
 
-  const { isCurrentStepValid, handleNext, handlePrevious } = useSimulationLogic(
-    currentStep,
-    TOTAL_STEPS,
-    navigate,
-  );
+  const { isCurrentStepValid, handleNext, handlePrevious } = useSimulationLogic(currentStep, TOTAL_STEPS, navigate)
 
   return (
     <div className="shrink-0 border-t border-b pt-4 px-4 pb-4 flex justify-between">
-      <Button
-        variant="outline"
-        onClick={handlePrevious}
-        disabled={currentStep === 0}
-      >
+      <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 0}>
         Previous
       </Button>
       <Button onClick={handleNext} disabled={!isCurrentStepValid()}>
-        {currentStep === TOTAL_STEPS - 1 ? "Finish" : "Next"}
+        {currentStep === TOTAL_STEPS - 1 ? 'Finish' : 'Next'}
       </Button>
     </div>
-  );
+  )
 }
 
 export default function CreateSimulation() {
-  const { stepNumber } = useParams();
-  const navigate = useNavigate();
-  const currentStep = stepNumber ? parseInt(stepNumber) : 0;
+  const { stepNumber } = useParams()
+  const navigate = useNavigate()
+  const currentStep = stepNumber ? parseInt(stepNumber) : 0
 
   useEffect(() => {
     if (!stepNumber) {
-      navigate("/simulation/new/0", { replace: true });
+      navigate('/simulation/new/0', { replace: true })
     }
-  }, [stepNumber, navigate]);
+  }, [stepNumber, navigate])
 
   return (
     <SimulationProvider>
@@ -65,5 +57,5 @@ export default function CreateSimulation() {
         <AppFooter />
       </main>
     </SimulationProvider>
-  );
+  )
 }

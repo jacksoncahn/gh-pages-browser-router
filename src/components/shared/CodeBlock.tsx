@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
-import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
+import { Button } from '@/components/ui/button'
+import { Copy } from 'lucide-react'
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
 
 interface CodeBlockProps {
-  code: string;
-  onCopy?: () => void;
+  code: string
+  onCopy?: () => void
 }
 
 /**
@@ -12,14 +12,14 @@ interface CodeBlockProps {
  * Manages "Copied" state internally and provides visual feedback.
  */
 export function CodeBlock({ code, onCopy }: CodeBlockProps) {
-  const { copied, error, copy } = useCopyToClipboard();
+  const { copied, error, copy } = useCopyToClipboard()
 
   const handleCopy = async () => {
-    const success = await copy(code);
+    const success = await copy(code)
     if (success) {
-      onCopy?.();
+      onCopy?.()
     }
-  };
+  }
 
   return (
     <div className="mt-6 relative flex flex-row items-center gap-4">
@@ -28,8 +28,8 @@ export function CodeBlock({ code, onCopy }: CodeBlockProps) {
       </pre>
       <Button size="sm" variant="outline" onClick={handleCopy}>
         <Copy className="mr-2 h-4 w-4" />
-        {copied ? "Copied!" : error ? "Failed to copy" : "Copy"}
+        {copied ? 'Copied!' : error ? 'Failed to copy' : 'Copy'}
       </Button>
     </div>
-  );
+  )
 }

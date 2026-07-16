@@ -1,6 +1,6 @@
 interface StepProgressProps {
-  step: number;
-  totalSteps: number;
+  step: number
+  totalSteps: number
 }
 
 export function CreationStepProgress({ step, totalSteps }: StepProgressProps) {
@@ -14,20 +14,13 @@ export function CreationStepProgress({ step, totalSteps }: StepProgressProps) {
       aria-label={`Step ${step} of ${totalSteps}`}
     >
       {Array.from({ length: totalSteps }, (_, index) => {
-        const isActive = index < step;
-        return (
-          <div
-            key={index}
-            className={`flex-1 h-4 rounded-full ${
-              isActive ? "bg-primary" : "bg-muted"
-            }`}
-          ></div>
-        )
+        const isActive = index < step
+        return <div key={index} className={`flex-1 h-4 rounded-full ${isActive ? 'bg-primary' : 'bg-muted'}`}></div>
       })}
 
       <p className="font-semibold text-lg text-center">
         Step {step} / {totalSteps}
       </p>
     </div>
-  );
+  )
 }

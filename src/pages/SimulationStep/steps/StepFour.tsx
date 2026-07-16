@@ -1,19 +1,19 @@
-import { Input } from "@/components/ui/input";
-import { useSimulation } from "@/hooks/useSimulation";
-import { ControlledCombobox } from "@/components/shared/ControlledCombobox";
-import { CodeBlock } from "@/components/shared/CodeBlock";
-import { BoxTypes, type BoxType } from "@/types/simulation.types";
-import { generateStepCommand } from "@/utils/gromacs.utils";
-import { STEP_CONFIG } from "@/constants/simulation.constants";
+import { Input } from '@/components/ui/input'
+import { useSimulation } from '@/hooks/useSimulation'
+import { ControlledCombobox } from '@/components/shared/ControlledCombobox'
+import { CodeBlock } from '@/components/shared/CodeBlock'
+import { BoxTypes, type BoxType } from '@/types/simulation.types'
+import { generateStepCommand } from '@/utils/gromacs.utils'
+import { STEP_CONFIG } from '@/constants/simulation.constants'
 
 /**
  * Step Four: Box Definition and Solvation
  * Users define the box dimensions and type for solvating the protein
  */
 export default function StepFour() {
-  const simulation = useSimulation();
-  const params = simulation.currentSimulation?.simulation_params;
-  const { title, description } = STEP_CONFIG[4];
+  const simulation = useSimulation()
+  const params = simulation.currentSimulation?.simulation_params
+  const { title, description } = STEP_CONFIG[4]
 
   return (
     <div className="gap-4 flex flex-col items-center">
@@ -30,25 +30,18 @@ export default function StepFour() {
             placeholder="e.g. 1.0"
             step="0.1"
             min="0.1"
-            value={params?.boxDistance || ""}
-            onChange={(e) =>
-              simulation.updateBoxDistance(parseFloat(e.target.value) || 0)
-            }
+            value={params?.boxDistance || ''}
+            onChange={e => simulation.updateBoxDistance(parseFloat(e.target.value) || 0)}
           />
         </div>
         <ControlledCombobox
           label="Box Type"
           items={Object.values(BoxTypes)}
           value={params?.boxType}
-          onChange={(value) => simulation.updateBoxType(value as BoxType)}
+          onChange={value => simulation.updateBoxType(value as BoxType)}
         />
       </div>
-      <CodeBlock
-        code={generateStepCommand(
-          4,
-          simulation.currentSimulation?.simulation_params,
-        )}
-      />
+      <CodeBlock code={generateStepCommand(4, simulation.currentSimulation?.simulation_params)} />
     </div>
-  );
+  )
 }

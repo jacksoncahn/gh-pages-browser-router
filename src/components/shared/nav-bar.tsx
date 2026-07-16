@@ -1,17 +1,16 @@
-import { Plus } from "lucide-react";
-import { Button } from "../ui/button";
-import { ModeToggle } from "./mode-toggle";
-import { useNavigate } from "react-router";
-
-const DRAFT_SIMULATION_KEY = "simulation-draft";
+import { Plus } from 'lucide-react'
+import { Button } from '../ui/button'
+import { ModeToggle } from './mode-toggle'
+import { useNavigate } from 'react-router'
+import { DRAFT_SIMULATION_KEY } from '@/utils/simulation.utils'
 
 export function NavBar({ showButton = true }: { showButton?: boolean }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleNewSimulation = () => {
-    sessionStorage.removeItem(DRAFT_SIMULATION_KEY);
-    navigate("/simulation/new/0");
-  };
+    sessionStorage.removeItem(DRAFT_SIMULATION_KEY)
+    navigate('/simulation/new/0')
+  }
 
   return (
     <header className="sticky top-0 flex w-full h-16 items-center justify-between border-b bg-background px-4 md:px-6 mb-4">
@@ -19,7 +18,7 @@ export function NavBar({ showButton = true }: { showButton?: boolean }) {
         <button
           type="button"
           className="cursor-pointer outline-none focus-visible:underline"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate('/dashboard')}
         >
           MD GOOEY
         </button>
@@ -34,5 +33,5 @@ export function NavBar({ showButton = true }: { showButton?: boolean }) {
         )}
       </div>
     </header>
-  );
+  )
 }

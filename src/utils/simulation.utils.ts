@@ -1,56 +1,59 @@
-import type { ProteinMetadata, Simulation, SimulationDraft } from "@/types/simulation.types";
+import type { ProteinMetadata, Simulation, SimulationDraft } from '@/types/simulation.types'
 
-const SIMULATIONS_KEY = 'gromacs-simulations';
+const SIMULATIONS_KEY = 'gromacs-simulations'
+export const DRAFT_SIMULATION_KEY = 'simulation-draft'
 
 // STORAGE UTILITIES
 
 export const getAllSimulations = (): Simulation[] => {
   try {
-    const stored = localStorage.getItem(SIMULATIONS_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const stored = localStorage.getItem(SIMULATIONS_KEY)
+    return stored ? JSON.parse(stored) : []
   } catch (error) {
-    console.error('Failed to load simulations from localStorage:', error);
-    return [];
+    console.error('Failed to load simulations from localStorage:', error)
+    return []
   }
-};
+}
 
 export const getSimulationById = (id: number): Simulation | null => {
-  const simulations = getAllSimulations();
-  return simulations.find(sim => sim.id === id) || null;
-};
+  const simulations = getAllSimulations()
+  return simulations.find(sim => sim.id === id) || null
+}
 
 export const saveSimulation = (simulation: Simulation): void => {
   try {
-    const simulations = getAllSimulations();
-    const existingIndex = simulations.findIndex(sim => sim.id === simulation.id);
+    const simulations = getAllSimulations()
+    const existingIndex = simulations.findIndex(sim => sim.id === simulation.id)
 
     if (existingIndex >= 0) {
-      simulations[existingIndex] = simulation;
+      simulations[existingIndex] = simulation
     } else {
-      simulations.push(simulation);
+      simulations.push(simulation)
     }
 
-    localStorage.setItem(SIMULATIONS_KEY, JSON.stringify(simulations));
+    localStorage.setItem(SIMULATIONS_KEY, JSON.stringify(simulations))
   } catch (error) {
-    console.error('Failed to save simulation to localStorage:', error);
+    console.error('Failed to save simulation to localStorage:', error)
   }
-};
+}
 
 export const deleteSimulation = (id: number): void => {
   try {
-    const simulations = getAllSimulations();
-    const filtered = simulations.filter(sim => sim.id !== id);
-    localStorage.setItem(SIMULATIONS_KEY, JSON.stringify(filtered));
+    const simulations = getAllSimulations()
+    const filtered = simulations.filter(sim => sim.id !== id)
+    localStorage.setItem(SIMULATIONS_KEY, JSON.stringify(filtered))
   } catch (error) {
-    console.error('Failed to delete simulation from localStorage:', error);
+    console.error('Failed to delete simulation from localStorage:', error)
   }
-};
+}
 
 export const generateSimulationId = (): number => {
-  const simulations = getAllSimulations();
-  if (simulations.length === 0) return 1;
-  return Math.max(...simulations.map(sim => sim.id)) + 1;
-};
+  const simulations = getAllSimulations()
+  if (simulations.length === 0) {
+    return 1
+  }
+  return Math.max(...simulations.map(sim => sim.id)) + 1
+}
 
 // VALIDATION UTILITIES
 
@@ -58,57 +61,69 @@ export const generateSimulationId = (): number => {
  * Validation rules for each step
  * Returns true if the step has all required fields filled
  */
-export const validateStep = (
-  step: number,
-  simulation: SimulationDraft | null
-): boolean => {
-  if (!simulation) return false;
+export const validateStep = (step: number, simulation: SimulationDraft | null): boolean => {
+  if (!simulation) {
+    return false
+  }
 
-  const params = simulation.simulation_params;
+  const params = simulation.simulation_params
 
   switch (step) {
     case 0:
-      return Boolean(simulation.simName && simulation.simName.trim().length > 0);
+      return Boolean(simulation.simName && simulation.simName.trim().length > 0)
     case 1:
-      return !!params?.gromacsVersion;
+      return !!params?.gromacsVersion
     case 2:
       return (
         !!params?.proteinId?.trim() &&
         !!params?.proteinMetadata &&
-        params.proteinMetadata.entryId.toUpperCase() ===
-          params.proteinId.trim().toUpperCase()
-      );
+        params.proteinMetadata.entryId.toUpperCase() === params.proteinId.trim().toUpperCase()
+      )
     case 3:
-      return !!params?.forceField && !!params?.waterModel;
+      return !!params?.forceField && !!params?.waterModel
     case 4:
-      return !!params?.boxDistance && params.boxDistance > 0 && !!params?.boxType;
+      return !!params?.boxDistance && params.boxDistance > 0 && !!params?.boxType
     case 5:
-      return !!params?.positiveIon && !!params?.negativeIon && !!params?.solventGroup && (params.enableMaxIonsWarning ? params.maxIonWarnings != null : true);
+      return (
+        !!params?.positiveIon &&
+        !!params?.negativeIon &&
+        !!params?.solventGroup &&
+        (params.enableMaxIonsWarning ? params.maxIonWarnings != null : true)
+      )
     case 6:
-      return (params?.enableMaxMinimizationWarning ? params.maxMinimizationWarnings != null : true);
-    case 7:
-      return !!params?.equilibrationOptions && (params.enableMaxEquilibrationWarning ? params.maxEquilibrationWarnings != null : true);
+      return params?.enableMaxMinimizationWarning ? params.maxMinimizationWarnings != null : true
+    case 7: {
+      const requiresConfigFiles =
+        params?.equilibrationOptions === 'nvt' ||
+        params?.equilibrationOptions === 'npt' ||
+        params?.equilibrationOptions === 'both'
+      return (
+        !!params?.equilibrationOptions &&
+        (requiresConfigFiles && params.enableMaxEquilibrationWarning ? params.maxEquilibrationWarnings != null : true)
+      )
+    }
     case 8:
+      return true
     case 9:
-      return (params?.enableRunSimulationWarning ? params.maxRunSimulationWarnings != null : true);
+      return params?.enableRunSimulationWarning ? params.maxRunSimulationWarnings != null : true
     case 10:
-      return true;
+      return true
     default:
-      return false;
+      return false
   }
-};
-
-
+}
 
 /**
  * Validate PDB ID format
  * Format: 4 characters, first is digit, rest are alphanumeric
  */
 export const isValidPDBId = (pdbId: string): boolean => {
-  if (!pdbId) return false;
-  const pdbPattern = /^[0-9][A-Za-z0-9]{3}$/;
-  return pdbPattern.test(pdbId.trim());
-};
+  if (!pdbId) {
+    return false
+  }
+  const pdbPattern = /^[0-9][A-Za-z0-9]{3}$/
+  return pdbPattern.test(pdbId.trim())
+}
 
 // PDB LOOKUP UTILITIES
 
@@ -118,32 +133,35 @@ export const isValidPDBId = (pdbId: string): boolean => {
  */
 export const handlePDBLookupLogic = async (
   proteinId: string,
-  updateProteinMetadata: (metadata: ProteinMetadata | null) => void,
-): Promise<{ status: "success" | "not_found" | "error"; error: string | null }> => {
+  updateProteinMetadata: (metadata: ProteinMetadata | null) => void
+): Promise<{
+  status: 'success' | 'not_found' | 'error'
+  error: string | null
+}> => {
   try {
-    const { fetchPDBMetadata } = await import("@/services/rscb");
-    const result = await fetchPDBMetadata(proteinId);
+    const { fetchPDBMetadata } = await import('@/services/rscb')
+    const result = await fetchPDBMetadata(proteinId)
 
-    if (result.status === "success" && result.data) {
-      updateProteinMetadata(result.data);
-      return { status: "success", error: null };
-    } else if (result.status === "not_found") {
-      updateProteinMetadata(null);
+    if (result.status === 'success' && result.data) {
+      updateProteinMetadata(result.data)
+      return { status: 'success', error: null }
+    } else if (result.status === 'not_found') {
+      updateProteinMetadata(null)
       return {
-        status: "not_found",
-        error: `No metadata found for PDB ID ${proteinId}`,
-      };
-    } else if (result.status === "error") {
-      updateProteinMetadata(null);
-      return { status: "error", error: result.message };
+        status: 'not_found',
+        error: `No metadata found for PDB ID ${proteinId}`
+      }
+    } else if (result.status === 'error') {
+      updateProteinMetadata(null)
+      return { status: 'error', error: result.message }
     }
   } catch (error) {
-    updateProteinMetadata(null);
+    updateProteinMetadata(null)
     return {
-      status: "error",
-      error: error instanceof Error ? error.message : "An unknown error occurred",
-    };
+      status: 'error',
+      error: error instanceof Error ? error.message : 'An unknown error occurred'
+    }
   }
 
-  return { status: "error", error: "Unknown error occurred" };
-};
+  return { status: 'error', error: 'Unknown error occurred' }
+}

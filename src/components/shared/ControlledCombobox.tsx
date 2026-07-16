@@ -1,20 +1,20 @@
-import { useId } from "react";
+import { useId } from 'react'
 import {
   Combobox,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxInput,
   ComboboxItem,
-  ComboboxList,
-} from "@/components/ui/combobox";
+  ComboboxList
+} from '@/components/ui/combobox'
 
 interface ControlledComboboxProps {
-  label: string;
-  items: string[];
-  value?: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  horizontal?: boolean;
+  label: string
+  items: string[]
+  value?: string
+  onChange: (value: string) => void
+  placeholder?: string
+  horizontal?: boolean
 }
 
 /**
@@ -27,26 +27,21 @@ export function ControlledCombobox({
   value,
   onChange,
   placeholder,
-  horizontal = false,
+  horizontal = false
 }: ControlledComboboxProps) {
-  const inputId = useId();
+  const inputId = useId()
 
   return (
-    <div className={`flex ${horizontal ? "flex-row items-center" : "flex-col"} gap-2`}>
-      <label htmlFor={inputId} className="text-sm font-medium">{label}</label>
-      <Combobox
-        items={items}
-        value={value ?? null}
-        onValueChange={(val) => val && onChange(val)}
-      >
-        <ComboboxInput
-          id={inputId}
-          placeholder={placeholder || `Select ${label.toLowerCase()}`}
-        />
+    <div className={`flex ${horizontal ? 'flex-row items-center' : 'flex-col'} gap-2`}>
+      <label htmlFor={inputId} className="text-sm font-medium">
+        {label}
+      </label>
+      <Combobox items={items} value={value ?? null} onValueChange={val => val && onChange(val)}>
+        <ComboboxInput id={inputId} placeholder={placeholder || `Select ${label.toLowerCase()}`} />
         <ComboboxContent>
           <ComboboxEmpty>No items found.</ComboboxEmpty>
           <ComboboxList>
-            {(item) => (
+            {item => (
               <ComboboxItem key={item} value={item}>
                 {item}
               </ComboboxItem>
@@ -55,5 +50,5 @@ export function ControlledCombobox({
         </ComboboxContent>
       </Combobox>
     </div>
-  );
+  )
 }

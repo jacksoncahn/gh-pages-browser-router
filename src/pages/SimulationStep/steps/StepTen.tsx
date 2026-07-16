@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Copy, Download } from "lucide-react";
-import { useSimulation } from "@/hooks/useSimulation";
-import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
-import { generateCompleteBashScript } from "@/utils/gromacs.utils";
-import { downloadTextFile } from "@/utils/download.utils";
-import { STEP_CONFIG } from "@/constants/simulation.constants";
+import { Button } from '@/components/ui/button'
+import { Copy, Download } from 'lucide-react'
+import { useSimulation } from '@/hooks/useSimulation'
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
+import { generateCompleteBashScript } from '@/utils/gromacs.utils'
+import { downloadTextFile } from '@/utils/download.utils'
+import { STEP_CONFIG } from '@/constants/simulation.constants'
 
 /**
  * Step Ten: Review and Submit
@@ -12,27 +12,27 @@ import { STEP_CONFIG } from "@/constants/simulation.constants";
  * Users can download or copy the complete GROMACS bash script
  */
 export default function StepTen() {
-  const simulation = useSimulation();
-  const { title, description } = STEP_CONFIG[10];
-  const { copied, error: copyError, copy } = useCopyToClipboard();
+  const simulation = useSimulation()
+  const { title, description } = STEP_CONFIG[10]
+  const { copied, error: copyError, copy } = useCopyToClipboard()
 
   /**
    * Copy the bash script to clipboard
    */
   const handleCopyBashScript = async () => {
-    const script = generateCompleteBashScript(simulation.currentSimulation);
-    await copy(script);
-  };
+    const script = generateCompleteBashScript(simulation.currentSimulation)
+    await copy(script)
+  }
 
   /**
    * Download the bash script as a .sh file
    */
   const handleDownloadBashScript = () => {
-    const script = generateCompleteBashScript(simulation.currentSimulation);
-    const simName = simulation.currentSimulation?.simName || "simulation";
-    const filename = `${simName.replace(/\s+/g, "_")}_gromacs.sh`;
-    downloadTextFile(script, filename);
-  };
+    const script = generateCompleteBashScript(simulation.currentSimulation)
+    const simName = simulation.currentSimulation?.simName || 'simulation'
+    const filename = `${simName.replace(/\s+/g, '_')}_gromacs.sh`
+    downloadTextFile(script, filename)
+  }
 
   return (
     <div className="gap-4 flex flex-col items-center w-full">
@@ -45,22 +45,16 @@ export default function StepTen() {
         <div className="relative flex flex-col gap-2">
           {/* Bash Script Preview */}
           <pre className="bg-card p-4 rounded-lg max-w-full w-full whitespace-pre-wrap wrap-break-word max-h-72 overflow-y-auto text-left">
-            <code className="text-xs">
-              {generateCompleteBashScript(simulation.currentSimulation)}
-            </code>
+            <code className="text-xs">{generateCompleteBashScript(simulation.currentSimulation)}</code>
           </pre>
 
           {/* Copy and Download Buttons */}
           <div className="flex gap-2 justify-end">
             <Button size="sm" variant="outline" onClick={handleCopyBashScript}>
               <Copy className="mr-2 h-4 w-4" />
-              {copied ? "Copied!" : copyError ? "Failed to copy" : "Copy Script"}
+              {copied ? 'Copied!' : copyError ? 'Failed to copy' : 'Copy Script'}
             </Button>
-            <Button
-              size="sm"
-              variant="default"
-              onClick={handleDownloadBashScript}
-            >
+            <Button size="sm" variant="default" onClick={handleDownloadBashScript}>
               <Download className="mr-2 h-4 w-4" />
               Download .sh
             </Button>
@@ -68,6 +62,5 @@ export default function StepTen() {
         </div>
       </div>
     </div>
-  );
+  )
 }
-

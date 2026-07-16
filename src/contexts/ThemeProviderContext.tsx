@@ -1,6 +1,6 @@
-import { createContext } from "react"
+import { createContext } from 'react'
 
-type Theme = "dark" | "light" | "system"
+type Theme = 'dark' | 'light' | 'system'
 
 type ThemeProviderState = {
   theme: Theme
@@ -8,8 +8,8 @@ type ThemeProviderState = {
 }
 
 const initialState: ThemeProviderState = {
-  theme: "system",
-  setTheme: () => null,
+  theme: 'system',
+  setTheme: () => null
 }
 
 export const ThemeProviderContext = createContext<ThemeProviderState>(initialState)

@@ -1,19 +1,19 @@
-import { Input } from "@/components/ui/input";
-import { useSimulation } from "@/hooks/useSimulation";
-import { ControlledCombobox } from "@/components/shared/ControlledCombobox";
-import { CodeBlock } from "@/components/shared/CodeBlock";
+import { Input } from '@/components/ui/input'
+import { useSimulation } from '@/hooks/useSimulation'
+import { ControlledCombobox } from '@/components/shared/ControlledCombobox'
+import { CodeBlock } from '@/components/shared/CodeBlock'
 import {
   PositiveIonTypes,
   NegativeIonTypes,
   type PositiveIonType,
   type NegativeIonType,
-  SolventGroups,
-} from "@/types/simulation.types";
-import { generateStepCommand } from "@/utils/gromacs.utils";
-import { STEP_CONFIG } from "@/constants/simulation.constants";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Checkbox } from "@/components/ui/checkbox";
-import { MaxWarnings } from "@/components/simulation/max-warnings";
+  SolventGroups
+} from '@/types/simulation.types'
+import { generateStepCommand } from '@/utils/gromacs.utils'
+import { STEP_CONFIG } from '@/constants/simulation.constants'
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Checkbox } from '@/components/ui/checkbox'
+import { MaxWarnings } from '@/components/simulation/max-warnings'
 
 /**
  * Step Five: Ionization
@@ -21,12 +21,12 @@ import { MaxWarnings } from "@/components/simulation/max-warnings";
  * and specify the solvent group and ion concentration
  */
 export default function StepFive() {
-  const simulation = useSimulation();
-  const params = simulation.currentSimulation?.simulation_params;
-  const { title, description } = STEP_CONFIG[5];
+  const simulation = useSimulation()
+  const params = simulation.currentSimulation?.simulation_params
+  const { title, description } = STEP_CONFIG[5]
 
-  const isNeutralizeChecked = !!params?.neutralizeSystem;
-  const isIonWarningEnabled = !!params?.enableMaxIonsWarning;
+  const isNeutralizeChecked = !!params?.neutralizeSystem
+  const isIonWarningEnabled = !!params?.enableMaxIonsWarning
 
   return (
     <div className="gap-4 flex flex-col items-center">
@@ -39,17 +39,13 @@ export default function StepFive() {
             label="Positive Ion"
             items={Object.values(PositiveIonTypes)}
             value={params?.positiveIon}
-            onChange={(value) =>
-              simulation.updatePositiveIon(value as PositiveIonType)
-            }
+            onChange={value => simulation.updatePositiveIon(value as PositiveIonType)}
           />
           <ControlledCombobox
             label="Negative Ion"
             items={Object.values(NegativeIonTypes)}
             value={params?.negativeIon}
-            onChange={(value) =>
-              simulation.updateNegativeIon(value as NegativeIonType)
-            }
+            onChange={value => simulation.updateNegativeIon(value as NegativeIonType)}
           />
         </div>
 
@@ -59,7 +55,7 @@ export default function StepFive() {
             label="Solvent Group"
             items={Object.values(SolventGroups)}
             value={params?.solventGroup}
-            onChange={(value) => simulation.updateSolventGroup(value as "SOL")}
+            onChange={value => simulation.updateSolventGroup(value as 'SOL')}
           />
           <div className="flex flex-col gap-2">
             <label htmlFor="ion-concentration" className="text-sm font-medium">
@@ -71,33 +67,27 @@ export default function StepFive() {
               placeholder="e.g. 0.15"
               step="0.05"
               min="0"
-              value={params?.ionConcentration ?? ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                simulation.updateIonConcentration(value === "" ? null : parseFloat(value));
+              value={params?.ionConcentration ?? ''}
+              onChange={e => {
+                const value = e.target.value
+                simulation.updateIonConcentration(value === '' ? null : parseFloat(value))
               }}
             />
           </div>
         </div>
 
         <FieldGroup className="mt-2">
-          <Field
-            orientation="horizontal"
-            className="w-fit mx-auto items-center justify-center gap-3"
-          >
+          <Field orientation="horizontal" className="w-fit mx-auto items-center justify-center gap-3">
             <Checkbox
               id="neutralize-ions"
               name="neutralize-ions"
               checked={isNeutralizeChecked}
-              onCheckedChange={(checked) => {
-                const isChecked = checked === true;
-                simulation.updateNeutralizeSystem(isChecked);
+              onCheckedChange={checked => {
+                const isChecked = checked === true
+                simulation.updateNeutralizeSystem(isChecked)
               }}
             />
-            <FieldLabel
-              htmlFor="neutralize-ions"
-              className="flex-none! text-center leading-snug"
-            >
+            <FieldLabel htmlFor="neutralize-ions" className="flex-none! text-center leading-snug">
               Neutralize the system
             </FieldLabel>
           </Field>
@@ -106,19 +96,12 @@ export default function StepFive() {
         <MaxWarnings
           enabled={isIonWarningEnabled}
           value={params?.maxIonWarnings ?? null}
-          onEnabledChange={(enabled) =>
-            simulation.updateEnableMaxIonsWarning(enabled)
-          }
-          onValueChange={(value) => simulation.updateIonMaxWarnings(value)}
+          onEnabledChange={enabled => simulation.updateEnableMaxIonsWarning(enabled)}
+          onValueChange={value => simulation.updateIonMaxWarnings(value)}
         />
       </div>
 
-      <CodeBlock
-        code={generateStepCommand(
-          5,
-          simulation.currentSimulation?.simulation_params,
-        )}
-      />
+      <CodeBlock code={generateStepCommand(5, simulation.currentSimulation?.simulation_params)} />
     </div>
-  );
+  )
 }
