@@ -76,7 +76,7 @@ export default function StepFive() {
           </div>
         </div>
 
-        <FieldGroup className="mt-2">
+        <FieldGroup className="mt-1">
           <Field orientation="horizontal" className="w-fit mx-auto items-center justify-center gap-3">
             <Checkbox
               id="neutralize-ions"

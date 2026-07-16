@@ -11,17 +11,18 @@ interface MaxWarningsProps {
 
 export function MaxWarnings({ enabled, value, onEnabledChange, onValueChange }: MaxWarningsProps) {
   return (
-    <FieldGroup className="mt-2">
-      <Field orientation="horizontal" className="w-lg mx-auto items-center justify-center gap-x-3">
+    <FieldGroup className="mt-1 justify-center">
+      <Field orientation="horizontal" className="w-lg mx-auto items-start gap-x-3">
         <Checkbox
           id="max-warnings"
           name="max-warnings"
           checked={enabled}
+          className="mt-0.5"
           onCheckedChange={checked => {
             onEnabledChange(checked)
           }}
         />
-        <FieldLabel htmlFor="max-warnings" className="flex-none! text-center leading-snug">
+        <FieldLabel htmlFor="max-warnings" className="min-w-0 flex-1 pr-6 text-left leading-snug">
           Bypass warnings to allow GROMACS to continue running despite potential issues
         </FieldLabel>
       </Field>
