@@ -57,6 +57,20 @@ export const generateSimulationId = (): number => {
 
 // VALIDATION UTILITIES
 
+const validators: Record<number, (simulation: SimulationDraft) => boolean> = {
+  0: simulation => Boolean(simulation.simName && simulation.simName.trim().length > 0),
+  1: ({ simulation_params: params }) => Boolean(params?.gromacsVersion),
+  2: ({ simulation_params: params }) => (Boolean(params?.proteinId?.trim()) && Boolean(params?.proteinMetadata) && params?.proteinMetadata?.entryId.toUpperCase() === params?.proteinId?.trim().toUpperCase()),
+  3: ({ simulation_params: params }) => Boolean(params?.forceField) && Boolean(params?.waterModel),
+  4: ({ simulation_params: params }) => (Boolean(params?.boxDistance) && (params?.boxDistance ?? 0) > 0 && Boolean(params?.boxType)),
+  5: ({ simulation_params: params }) => (Boolean(params?.positiveIon) && Boolean(params?.negativeIon) && Boolean(params?.solventGroup) && (params?.enableMaxIonsWarning ? params?.maxIonWarnings != null : true)),
+  6: ({ simulation_params: params }) => (params?.enableMaxMinimizationWarning ? params.maxMinimizationWarnings != null : true),
+  7: ({ simulation_params: params }) => (Boolean(params?.equilibrationOptions) && ((params?.equilibrationOptions === 'nvt' || params?.equilibrationOptions === 'npt' || params?.equilibrationOptions === 'both') && params?.enableMaxEquilibrationWarning ? params?.maxEquilibrationWarnings != null : true)),
+  8: () => true,
+  9: ({ simulation_params: params }) => (params?.enableRunSimulationWarning ? params.maxRunSimulationWarnings != null : true),
+  10: () => true, 
+}
+
 /**
  * Validation rules for each step
  * Returns true if the step has all required fields filled
@@ -66,51 +80,7 @@ export const validateStep = (step: number, simulation: SimulationDraft | null): 
     return false
   }
 
-  const params = simulation.simulation_params
-
-  switch (step) {
-    case 0:
-      return Boolean(simulation.simName && simulation.simName.trim().length > 0)
-    case 1:
-      return Boolean(params?.gromacsVersion)
-    case 2:
-      return (
-        Boolean(params?.proteinId?.trim()) &&
-        Boolean(params?.proteinMetadata) &&
-        params?.proteinMetadata?.entryId.toUpperCase() === params?.proteinId?.trim().toUpperCase()
-      )
-    case 3:
-      return Boolean(params?.forceField) && Boolean(params?.waterModel)
-    case 4:
-      return Boolean(params?.boxDistance) && (params?.boxDistance ?? 0) > 0 && Boolean(params?.boxType)
-    case 5:
-      return (
-        Boolean(params?.positiveIon) &&
-        Boolean(params?.negativeIon) &&
-        Boolean(params?.solventGroup) &&
-        (params?.enableMaxIonsWarning ? params?.maxIonWarnings != null : true)
-      )
-    case 6:
-      return params?.enableMaxMinimizationWarning ? params.maxMinimizationWarnings != null : true
-    case 7: {
-      const requiresConfigFiles =
-        params?.equilibrationOptions === 'nvt' ||
-        params?.equilibrationOptions === 'npt' ||
-        params?.equilibrationOptions === 'both'
-      return (
-        Boolean(params?.equilibrationOptions) &&
-        (requiresConfigFiles && params?.enableMaxEquilibrationWarning ? params?.maxEquilibrationWarnings != null : true)
-      )
-    }
-    case 8:
-      return true
-    case 9:
-      return params?.enableRunSimulationWarning ? params.maxRunSimulationWarnings != null : true
-    case 10:
-      return true
-    default:
-      return false
-  }
+  return Boolean(validators[step]?.(simulation))
 }
 
 /**

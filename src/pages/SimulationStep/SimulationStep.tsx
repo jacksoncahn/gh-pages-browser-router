@@ -37,7 +37,7 @@ const STEP_COMPONENTS = [
  */
 export default function SimulationStep() {
   const { stepNumber } = useParams()
-  const currentStep = parseInt(stepNumber || '0')
+  const currentStep = Math.floor(Number(stepNumber || '0')) 
 
   // Get the appropriate step component
   const StepComponent = STEP_COMPONENTS[currentStep]
@@ -53,3 +53,10 @@ export default function SimulationStep() {
     </div>
   )
 }
+
+
+//// future - TODO
+// const futureStepComponents = {
+//   "simulation-name": {component: StepZero, nextStep: "gromacs-version", previousStep: ""},
+//   "gromacs-version": {component: StepOne, nextStep: "", previousStep: "simulation-name"},
+// }

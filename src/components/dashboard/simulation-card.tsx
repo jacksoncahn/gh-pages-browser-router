@@ -2,6 +2,7 @@ import { Card, CardContent, CardTitle } from '../ui/card'
 import { Atom, Circle } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { useNavigate } from 'react-router'
+import type { JSX } from 'react'
 
 type SimulationStatus = 'paused' | 'running' | 'complete' | 'unknown'
 
@@ -14,36 +15,34 @@ interface SimulationCardProps {
   }
   status: SimulationStatus
 }
+
+const badgeMap: Record<string, JSX.Element> = {
+  complete: (
+    <Badge variant="outline">
+      <Circle data-icon="inline-start" className="fill-success text-success" />
+      Complete
+    </Badge>
+  ),
+  running: (
+    <Badge variant="outline">
+      <Circle data-icon="inline-start" className="fill-warning text-warning" />
+      Running
+    </Badge>
+  ),
+  paused: (
+    <Badge variant="outline">
+      <Circle data-icon="inline-start" className="fill-secondary text-secondary" />
+      Paused
+    </Badge>
+  )
+}
+
+const defaultBadge: JSX.Element = <Badge variant="outline">Loading...</Badge>
+
 export function SimulationCard({ simulation, status }: SimulationCardProps) {
   const navigate = useNavigate()
 
-  const getStatusBadge = () => {
-    switch (status) {
-      case 'complete':
-        return (
-          <Badge variant="outline">
-            <Circle data-icon="inline-start" className="fill-success text-success" />
-            Complete
-          </Badge>
-        )
-      case 'running':
-        return (
-          <Badge variant="outline">
-            <Circle data-icon="inline-start" className="fill-warning text-warning" />
-            Running
-          </Badge>
-        )
-      case 'paused':
-        return (
-          <Badge variant="outline">
-            <Circle data-icon="inline-start" className="fill-secondary text-secondary" />
-            Paused
-          </Badge>
-        )
-      default:
-        return <Badge variant="outline">Loading...</Badge>
-    }
-  }
+  const getStatusBadge = () => badgeMap[status] ?? defaultBadge
 
   const handleClick = () => {
     navigate(`/simulation/${simulation.id}`)
