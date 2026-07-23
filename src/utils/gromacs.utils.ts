@@ -99,21 +99,21 @@ export function generateStepCommand(
   const verificationCmd = [
     verification?.temperature
       ? withEcho(
-          `${gromacsVersion} energy -f ${proteinId}_nvt.edr -o ${proteinId}_temperature.xvg`,
+          `${gromacsVersion} energy -f ${proteinId}_${equilibration === 'none' ? 'em' : equilibration === 'nvt' ? 'nvt' : 'npt'}.edr -o ${proteinId}_temperature.xvg`,
           ECHO_VALUES.temperature,
           inBashScript
         )
       : '',
     verification?.pressure
       ? withEcho(
-          `${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_pressure.xvg`,
+          `${gromacsVersion} energy -f ${proteinId}_${equilibration === 'none' ? 'em' : equilibration === 'nvt' ? 'nvt' : 'npt'}.edr -o ${proteinId}_pressure.xvg`,
           ECHO_VALUES.pressure,
           inBashScript
         )
       : '',
     verification?.system_volume
       ? withEcho(
-          `${gromacsVersion} energy -f ${proteinId}_npt.edr -o ${proteinId}_volume.xvg`,
+          `${gromacsVersion} energy -f ${proteinId}_${equilibration === 'none' ? 'em' : equilibration === 'nvt' ? 'nvt' : 'npt'}.edr -o ${proteinId}_volume.xvg`,
           ECHO_VALUES.system_volume,
           inBashScript
         )
@@ -126,7 +126,10 @@ export function generateStepCommand(
     equilibration === 'nvt' || equilibration === 'both'
       ? `${gromacsVersion} grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr${enableMaxEquilibrationWarning ? ` -maxwarn ${maxEquilibrationWarnings}` : ''}\n${gromacsVersion} mdrun -deffnm ${proteinId}_nvt${nbFlag}`
       : '',
-    equilibration === 'npt' || equilibration === 'both'
+    equilibration === 'npt' 
+      ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -t ${proteinId}_em.cpt -p topol.top -o ${proteinId}_em.tpr${enableMaxEquilibrationWarning ? ` -maxwarn ${maxEquilibrationWarnings}` : ''}\n${gromacsVersion} mdrun -deffnm ${proteinId}_em${nbFlag}`
+      : '',
+    equilibration === 'both'
       ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr${enableMaxEquilibrationWarning ? ` -maxwarn ${maxEquilibrationWarnings}` : ''}\n${gromacsVersion} mdrun -deffnm ${proteinId}_npt${nbFlag}`
       : ''
   ]
@@ -141,7 +144,7 @@ export function generateStepCommand(
     6: `${gromacsVersion} grompp -f minim.mdp -c ${proteinId}_ions.gro -p topol.top -o ${proteinId}_em.tpr${enableMaxMinimizationWarning ? ` -maxwarn ${maxMinimizationWarnings}` : ''}\n${gromacsVersion} mdrun -deffnm ${proteinId}_em\n${withEcho(minimizationEnergyCmd, ECHO_VALUES.potential, inBashScript)}`,
     7: equilibrationCmd,
     8: verificationCmd,
-    9: `${gromacsVersion} grompp -f md.mdp -c ${proteinId}_npt.gro -t ${proteinId}_npt.cpt -p topol.top -o ${proteinId}_md.tpr${enableRunSimulationWarning ? ` -maxwarn ${maxRunSimulationWarnings}` : ''}\n${gromacsVersion} mdrun -deffnm ${proteinId}_md${nbFlag}`
+    9: `${gromacsVersion} grompp -f md.mdp -c ${proteinId}_${equilibration === 'none' ? 'em' : equilibration === 'nvt' ? 'nvt' : 'npt'}.gro -t ${proteinId}_${equilibration === 'none' ? 'em' : equilibration === 'nvt' ? 'nvt' : 'npt'}.cpt -p topol.top -o ${proteinId}_md.tpr${enableRunSimulationWarning ? ` -maxwarn ${maxRunSimulationWarnings}` : ''}\n${gromacsVersion} mdrun -deffnm ${proteinId}_md${nbFlag}`
   }
 
   return commands[step] || ''
