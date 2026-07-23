@@ -11,7 +11,7 @@ interface MaxWarningsProps {
 
 export function MaxWarnings({ enabled, value, onEnabledChange, onValueChange }: MaxWarningsProps) {
   return (
-    <FieldGroup className="mt-1 justify-center">
+    <FieldGroup className="justify-center">
       <Field orientation="horizontal" className="w-lg mx-auto items-start gap-x-3">
         <Checkbox
           id="max-warnings"

@@ -37,7 +37,7 @@ const STEP_COMPONENTS = [
  */
 export default function SimulationStep() {
   const { stepNumber } = useParams()
-  const currentStep = Math.floor(Number(stepNumber || '0')) 
+  const currentStep = Math.floor(Number(stepNumber || '0'))
 
   // Get the appropriate step component
   const StepComponent = STEP_COMPONENTS[currentStep]
@@ -53,7 +53,6 @@ export default function SimulationStep() {
     </div>
   )
 }
-
 
 //// future - TODO
 // const futureStepComponents = {

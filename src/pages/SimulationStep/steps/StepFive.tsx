@@ -29,7 +29,7 @@ export default function StepFive() {
   const isIonWarningEnabled = Boolean(params?.enableMaxIonsWarning)
 
   return (
-    <div className="gap-4 flex flex-col items-center">
+    <div className="gap-2 flex flex-col items-center">
       <h2 className="text-2xl font-bold mb-2">{title}</h2>
       <p>{description}</p>
       <div className="flex flex-col items-center gap-8 mt-4">

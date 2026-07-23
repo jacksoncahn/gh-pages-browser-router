@@ -27,12 +27,13 @@ export const STEP_CONFIG = {
   },
   5: {
     title: 'Add ions to the box',
-    description: 'Select the ion types to neutralize the system.'
+    description:
+      'Select the ion types to neutralize the system. Remember to include the required .mdp file when running the generated commands.'
   },
   6: {
     title: 'Conduct minimization',
     description:
-      'Energy minimization will be performed using default parameters. Advanced users can conduct their own version of this step.'
+      'Energy minimization will be performed using default parameters. Advanced users can conduct their own version of this step. Remember to include the required .mdp file when running the generated commands.'
   },
   7: {
     title: 'Equilibriate the system',
@@ -45,7 +46,7 @@ export const STEP_CONFIG = {
   9: {
     title: 'Run production MD',
     description:
-      'Run the production MD simulation with default parameters. Advanced users can run their own version of this step.'
+      'Run the production MD simulation with default parameters. Advanced users can run their own version of this step. Remember to include the required .mdp file when running the generated commands.'
   },
   10: {
     title: 'Complete Your Simulation',
