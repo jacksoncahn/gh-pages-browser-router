@@ -127,7 +127,7 @@ export function generateStepCommand(
       ? `${gromacsVersion} grompp -f nvt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -p topol.top -o ${proteinId}_nvt.tpr${enableMaxEquilibrationWarning ? ` -maxwarn ${maxEquilibrationWarnings}` : ''}\n${gromacsVersion} mdrun -deffnm ${proteinId}_nvt${nbFlag}`
       : '',
     equilibration === 'npt' 
-      ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -t ${proteinId}_em.cpt -p topol.top -o ${proteinId}_em.tpr${enableMaxEquilibrationWarning ? ` -maxwarn ${maxEquilibrationWarnings}` : ''}\n${gromacsVersion} mdrun -deffnm ${proteinId}_em${nbFlag}`
+      ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_em.gro -r ${proteinId}_em.gro -t ${proteinId}_em.cpt -p topol.top -o ${proteinId}_npt.tpr${enableMaxEquilibrationWarning ? ` -maxwarn ${maxEquilibrationWarnings}` : ''}\n${gromacsVersion} mdrun -deffnm ${proteinId}_npt${nbFlag}`
       : '',
     equilibration === 'both'
       ? `${gromacsVersion} grompp -f npt.mdp -c ${proteinId}_nvt.gro -r ${proteinId}_nvt.gro -t ${proteinId}_nvt.cpt -p topol.top -o ${proteinId}_npt.tpr${enableMaxEquilibrationWarning ? ` -maxwarn ${maxEquilibrationWarnings}` : ''}\n${gromacsVersion} mdrun -deffnm ${proteinId}_npt${nbFlag}`
