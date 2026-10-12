@@ -29,7 +29,7 @@ const router = createBrowserRouter([
       { path: '*', Component: NotFound }
     ]
   }
-  //create base name 
+  //create base name which is required for browser router
 ], { basename: '/md-gooey' })
 
 // const router = createHashRouter([
