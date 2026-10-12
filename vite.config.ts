@@ -42,5 +42,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
-  base: '/md-gooey/'
+  base: '/gh-pages-browser-router/'
 })

@@ -30,7 +30,7 @@ const router = createBrowserRouter([
     ]
   }
   //create base name which is required for browser router
-], { basename: '/md-gooey' })
+], { basename: '/gh-pages-browser-router' })
 
 // const router = createHashRouter([
 //   {
