@@ -42,5 +42,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
-  base: '/gh-pages-browser-router/'
+
+  //added repo name + "/dev" cuz development version 
+  //(this branch) will be deployed at a subdirectory dev
+  base: '/gh-pages-browser-router/dev/'
 })
