@@ -25,9 +25,11 @@
       
       console.log('custom 404')
 
-      var pathSegmentsToKeep = 1;
-
       var l = window.location;
+      var pathSegments = l.pathname.slice(1).split('/');
+      var hasDevSegment = pathSegments[1] === 'dev';
+      var pathSegmentsToKeep = hasDevSegment ? 2 : 1;
+
       l.replace(
         l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
         l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +

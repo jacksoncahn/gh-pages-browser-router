@@ -18,11 +18,16 @@
       // the single page app to route accordingly.
       (function(l) {
         if (l.search[1] === '/' ) {
+          var pathSegments = l.pathname.split('/').slice(1);
+          var hasDevSegment = pathSegments[1] === 'dev';
           var decoded = l.search.slice(1).split('&').map(function(s) { 
             return s.replace(/~and~/g, '&')
           }).join('?');
+          var basePath = hasDevSegment
+            ? '/' + pathSegments.slice(0, 2).join('/')
+            : l.pathname.slice(0, -1);
           window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
+              basePath + decoded + l.hash
           );
         }
       }(window.location))
