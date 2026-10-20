@@ -11,7 +11,7 @@ export default function Home() {
       <NavBar showButton={false} />
       <div className="flex-1 flex flex-col items-center justify-center p-8">
         <div className="max-w-3xl text-center space-y-6">
-          <h1 className="text-5xl font-bold mb-4">Welcome to MD Gooey</h1>
+          <h1 className="text-5xl font-bold mb-4">Welcome to MD Gooey Development</h1>
           <p className="text-xl text-muted-foreground mb-8">
             Some text that we write about molecular dynamics and the purpose of the website. Get started by creating a
             new simulation, or browsing our selection of pre-run options to see what's posisble.
