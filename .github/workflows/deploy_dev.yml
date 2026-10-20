@@ -120,7 +120,7 @@ jobs:
           # Create deployment structure.
           mkdir -p ./dist/dev
 
-          # copy 404.html file and put it into the root (only for development)
+          # copy public/404.html file and put it into the root (only for development)
           cp ../development/404.html ./dist/
 
           # Copy production build into the site root.
