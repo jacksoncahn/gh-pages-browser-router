@@ -27,7 +27,7 @@
 
       var l = window.location;
       var pathSegments = l.pathname.slice(1).split('/');
-      var pathSegmentsToKeep = 2;
+      var pathSegmentsToKeep = pathSegments[1] == 'dev'? 2 : 1;
 
       l.replace(
         l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
