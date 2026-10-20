@@ -1,7 +1,9 @@
+
+#this workflow exists to verify health before deployment
 name: Running CI on all branches
 
 on:
-  # Runs on pushes targeting the default branch
+  # Runs on pushes of any branch ("**")
   push:
     branches:
       - "**"
@@ -36,5 +38,7 @@ jobs:
       - name: Lint
         run: npm run lint
 
+#test build process
+#build is overwritten when the actual deploy workflow is run (it reruns 'npm run build')
       - name: Build
         run: npm run build

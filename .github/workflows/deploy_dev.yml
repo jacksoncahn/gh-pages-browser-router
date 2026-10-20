@@ -1,0 +1,141 @@
+# Deploy the development branch while preserving the production site.
+#
+# Final GitHub Pages structure:
+#
+# /
+# ├── index.html        <- production (test-react-router)
+# ├── assets/
+# └── dev/
+#     ├── index.html    <- development (dev)
+#     └── assets/
+
+name: Deploy development web-app to Pages (& preserved production version)
+
+on:
+  workflow_run:
+    # Run after CI workflow completes
+    workflows: ["Running CI on all branches"]
+    types:
+      - completed
+
+  # Direct deployment when pushing to dev
+  push:
+    branches:
+      - "dev"
+
+  # Allow manual execution from Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    # Only deploy when:
+    # - a push occurs on dev
+    # - manually triggered
+    # - CI succeeded AND the CI run was for the dev branch
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.ref == 'refs/heads/dev' ||
+      (
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'dev'
+      )
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the commit that triggered the workflow
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      # Useful while debugging. Can be removed later.
+      - name: Show remotes
+        run: git remote -v
+
+      # Fetch and mount the production branch in its own worktree.
+      # This allows us to build production and development
+      # simultaneously without switching branches.
+      - name: Add production worktree
+        run: |
+          git fetch origin_jackson test-react-router
+          git worktree add ../production origin_jackson/test-react-router
+
+      # Fetch and mount the development branch in its own worktree.
+      - name: Add development worktree
+        run: |
+          git fetch origin_jackson dev
+          git worktree add ../development origin_jackson/dev
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: npm
+
+      # Build production site.
+      # This will eventually be copied to the root of the deployed Pages site.
+      - name: Build production site
+        run: |
+          cd ../production
+          npm ci
+          npm run build
+
+      # Build development site.
+      # This will eventually be copied to /dev.
+      - name: Build development site
+        run: |
+          cd ../development
+          npm ci
+          npm run build
+
+      # Create the final GitHub Pages artifact.
+      #
+      # Result:
+      #
+      # dist/
+      # ├── index.html       <- production version
+      # ├── assets/
+      # └── dev/
+      #     ├── index.html   <- development version
+      #     └── assets/
+      #
+      - name: Arrange build files
+        run: |
+          # Remove any previous assembled deployment directory.
+          rm -rf ./dist
+
+          # Create deployment structure.
+          mkdir -p ./dist/dev
+
+          # Copy production build into the site root.
+          cp -R ../production/dist/* ./dist/
+
+          # Copy development build into the /dev subdirectory.
+          cp -R ../development/dist/* ./dist/dev/
+
+          echo "Final Pages structure:"
+          find ./dist -maxdepth 2 -type f | sort
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Upload combined production + development site.
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: "./dist"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
