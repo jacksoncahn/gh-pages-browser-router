@@ -15,6 +15,7 @@ on:
   workflow_run:
     # Run after CI workflow completes
     workflows: ["Running CI on all branches"]
+    branches: dev
     types:
       - completed
 
@@ -68,14 +69,14 @@ jobs:
       # simultaneously without switching branches.
       - name: Add production worktree
         run: |
-          git fetch origin_jackson test-react-router
-          git worktree add ../production origin_jackson/test-react-router
+          git fetch origin test-react-router
+          git worktree add ../production origin/test-react-router
 
       # Fetch and mount the development branch in its own worktree.
       - name: Add development worktree
         run: |
-          git fetch origin_jackson dev
-          git worktree add ../development origin_jackson/dev
+          git fetch origin dev
+          git worktree add ../development origin/dev
 
       - name: Set up Node
         uses: actions/setup-node@v6
