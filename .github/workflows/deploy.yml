@@ -4,15 +4,15 @@ name: Deploy static content to Pages
 on:
   workflow_run:
     workflows: ["Running CI on all branches"]
+    branches:
+      - test-react-router
     types:
       - completed
-  # Runs on pushes targeting the default branch
+
   push:
     branches:
-      - "main"
-      - "development"
-
-  # Allows you to run this workflow manually from the Actions tab
+      - test-react-router
+      
   workflow_dispatch:
 
 # Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
